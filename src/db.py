@@ -16,10 +16,13 @@ class LemmaFN(Base):
     __tablename__ = 'lemma_fn'
 
     lexunitid = Column(Integer, primary_key=True)
-    lemma = Column(String)
+    lemma = Column(String, primary_key=True)
     pos = Column(String)
-    frameid = Column(Integer)
+    frameid = Column(Integer, primary_key=True)
     lang = Column(String)
+
+    def __repr__(self):
+        return '<LemmaFN (lexunitid=%s, lemma=%s, pos=%s)>' % (self.lexunitid, self.lemma, self.pos)
 
 
 class EventFN(Base):
@@ -42,17 +45,22 @@ class EventFE(Base):
     event_fn = relationship("EventFN", back_populates="fes")
 
 
+    
 class Sentence(Base):
     __tablename__ = 'sentence'
 
     id = Column(String, primary_key=True)
     text = Column(String)
+    document_name = Column(String)
+    position = Column(Integer)
     events = relationship('EventTBPT', back_populates='sentence')
+    timexps = relationship('TimeExpTBPT', back_populates='sentence')
 
 class EventTBPT(Base):
     __tablename__ = 'event_tbpt'
 
     id = Column(String, primary_key=True)
+    eid = Column(String)
     trigger = Column(String)
     lemma = Column(String)
     pos = Column(String)
@@ -62,11 +70,16 @@ class EventTBPT(Base):
     sentence_id = Column(String, ForeignKey('sentence.id'))
     sentence = relationship('Sentence', back_populates='events')
     
-class TimeExpressionTBPT(Base):
-    __tablename__ = 'time_expression_tbpt'
+class TimeExpTBPT(Base):
+    __tablename__ = 'time_exp_tbpt'
 
     id = Column(String, primary_key=True)
+    tid = Column(String)
     text = Column(String)
+    start_at = Column(Integer)
+    end_at = Column(Integer)
+    sentence_id = Column(String, ForeignKey('sentence.id'))
+    sentence = relationship('Sentence', back_populates='timexps')
     
 
 class EventANN(Base):

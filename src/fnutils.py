@@ -1,7 +1,55 @@
 from nltk.corpus import framenet as fn
 from nltk.corpus import wordnet as wn
+import sqlalchemy
+from sqlalchemy import create_engine
+
+from sqlalchemy.orm import sessionmaker
+
+import timebankpttoolkit.timebankptcorpus as timebankpt
 
 
+def create_session():
+    global engine
+    global Session
+    engine = create_engine('sqlite:///tefa.db', echo=True)
+    Session = sessionmaker(bind=engine)
+
+def query_lemma(lemma_name):
+    session = Session()
+    return session.query(LemmaFN).filter_by(lemma=lemma_name).all()
+
+def query_frameid(lemma_name):
+    session = Session()
+    return {out[0] for out in session.query(LemmaFN.frameid).filter_by(lemma=lemma_name).all()}
+
+
+
+def str_uuid():
+    return str(uuid.uuid4())
+    
+def load_timebankpt_data(corpus_dir):
+    session = Session()
+    corpus = timebankpt.TimeBankPTCorpus('tbpt', corpus_dir)
+    for (doc_name, doc) in corpus.documents_by_target('train').items():
+        for (i, sent) in enumerate(doc.get_sentences()):
+            sent_id = str_uuid()
+            sentence = Sentence(id=sent_id, text=sent.get_text(), document_name=doc_name, position=i)
+            session.add(sentence)
+            for ((start_at, end_at), event) in sent.get_events_locations():
+                event_tbpt = EventTBPT(id=str_uuid(), eid=event.get_id(), trigger=event.text, lemma=event.get_stem(), pos=event.get_pos(), start_at=start_at, end_at=end_at, sentence_id=sent_id)
+                session.add(event_tbpt)
+            for ((start_at, end_at), timexp) in sent.get_timexs_locations():
+                time_exp_tbpt = TimeExpTBPT(id=str_uuid(), tid=timexp.get_id(), text=timexp.get_text(), start_at=start_at, end_at=end_at, sentence_id=sent_id)
+                session.add(time_exp_tbpt)
+            session.commit()
+            
+    
+def load_fn_events_lemmas():
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    for lemma_fn in lemma_frames():
+        session.add(lemma_fn)
+    session.commit()
 
 def is_event(frame):
     if frame and frame.name == 'Event':
