@@ -3,7 +3,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, DateTime
+
 
 import uuid
 
@@ -11,8 +12,8 @@ engine = create_engine('sqlite:///tefa.db', echo=True)
 Base = declarative_base()
 
 
-class TriggerLemma(Base):
-    __tablename__ = 'triggers_lemma'
+class LemmaFN(Base):
+    __tablename__ = 'lemma_fn'
 
     lexunitid = Column(Integer, primary_key=True)
     lemma = Column(String)
@@ -28,6 +29,7 @@ class EventFN(Base):
     name = Column(String)
     definition = Column(String)
 
+    fes = relationship('EventFE', back_populates='event_fn')
 
 class EventFE(Base):
     __tablename__ = 'event_fe'
@@ -43,8 +45,9 @@ class EventFE(Base):
 class Sentence(Base):
     __tablename__ = 'sentence'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     text = Column(String)
+    events = relationship('EventTBPT', back_populates='sentence')
 
 class EventTBPT(Base):
     __tablename__ = 'event_tbpt'
@@ -56,7 +59,7 @@ class EventTBPT(Base):
     start_at = Column(Integer)
     end_at = Column(Integer)
 
-    sentence_id = Column(Integer, ForeignKey('sentence.id'))
+    sentence_id = Column(String, ForeignKey('sentence.id'))
     sentence = relationship('Sentence', back_populates='events')
     
 class TimeExpressionTBPT(Base):
@@ -66,39 +69,54 @@ class TimeExpressionTBPT(Base):
     text = Column(String)
     
 
-def create_tables_srl_events(c):
-    c.execute('''CREATE TABLE IF NOT EXISTS sentence(
-    id integer primary key autoincrement,
-    sentence text unique )''')
+class EventANN(Base):
+    __tablename__ = 'event_ann'
+
+    id = Column(String, primary_key=True)
+    event_fn_id = Column(Integer, ForeignKey('event_fn.id'))
+    event_id = Column(String, ForeignKey('event_tbpt.id'))
+    created_at = Column(DateTime)
+    posted_at = Column(DateTime)
+    updated_at = Column(DateTime)
+    annotator_id = Column(String, ForeignKey('annotator.id'))
+
+    annotator = relationship('Annotator', back_populates='events_ann')
+    args_ann = relationship('ArgANN', back_populates='event_ann')
     
-    c.execute('''CREATE TABLE IF NOT EXISTS event_sentence(
-    id integer primary key autoincrement,
-    trigger text,
-    sentenceid integer,
-    FOREIGN KEY(sentenceid) REFERENCES sentence(id))''')
-    # missing the position the event in the sentence
+
+class ArgANN(Base):
+    __tablename__ = 'arg_ann'
+                      
+    start_at = Column(Integer)
+    end_at = Column(Integer)
+    created_at = Column(DateTime)
+    posted_at = Column(DateTime)
+    updated_at = Column(DateTime)
+    event_fe_id = Column(Integer, ForeignKey('event_fe.id'), primary_key=True)
+    event_ann_id = Column(String, ForeignKey('event_ann.id'), primary_key=True)
+    annotator_id = Column(String, ForeignKey('annotator.id'), primary_key=True)
+    annotator = relationship('Annotator', back_populates='args_ann')
+    event_ann = relationship('EventANN', back_populates='args_ann')
+
+
+class Annotator(Base):
+    __tablename__ = 'annotator'
+
+    id = Column(String, primary_key=True)
+    email = Column(String)
+    created_at = Column(DateTime)
+    posted_at = Column(DateTime)
+    
+    events_ann = relationship('EventANN', back_populates='annotator')
+    args_ann = relationship('ArgANN', back_populates='annotator')
+            
+class SentenceAnnotator(Base):
+    __tablename__ = 'sentence_annotator'
+
+    status = Column(String)
+    annotator_id = Column(String, ForeignKey('annotator.id'), primary_key=True)
+    sentence_id = Column(String, ForeignKey('sentence.id'), primary_key=True)
 
     
-    c.execute('''CREATE TABLE IF NOT EXISTS srl_predicate(
-    id integer primary key autoincrement,
-    predicate text,
-    sentenceid integer,
-    FOREIGN KEY(sentenceid) REFERENCES sentence(id)) ''')
+Base.metadata.create_all(engine)
 
-    c.execute('''CREATE TABLE IF NOT EXISTS verbnetbr_class(
-    class text unique)''')
-    
-    c.execute('''CREATE TABLE IF NOT EXISTS event_verbnetbr_class(
-    classid text,
-    eventid integer,
-    FOREIGN KEY(classid) REFERENCES verbnetbr_class(class),
-    FOREIGN KEY(eventid) REFERENCES event_sentence(id))''')
-
-
-    
-def load_verbnetbr_class():
-    conn = sqlite3.connect('timebankpt.db')
-    c = conn.cursor()
-    create_tables_srl_events(conn)
-    conn.commit()
-    conn.close()

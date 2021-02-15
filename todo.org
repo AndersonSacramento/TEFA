@@ -1,5 +1,6 @@
 * features
-** filter only event frames
-** filter core fe 
+** DONE filter only event frames
+** DONE filter core fe 
 ** filter peripheral fe
-
+** populate lemma table
+** create annotation tables

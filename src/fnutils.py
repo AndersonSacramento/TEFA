@@ -42,9 +42,14 @@ def lemma_frames(lang='por'):
             _ , pos = lexunit.name.split('.')
             pos = fn_to_wn_pos(pos)
             for lemma_name in get_lemma_from_lexunit_name(lexunit.name, lang=lang):
-                yield {'lexunit_id': lexunit.ID,
-                       'lemma_name': lemma_name,
-                       'pos': pos,
-                       'fn_id': frame.ID,
-                       'lang': lang}
+                yield LemmaFN(lexunitid=lexunit.ID,
+                              lemma=lemma_name,
+                              pos=pos,
+                              frameid=frame.ID,
+                              lang=lang)
+                # {'lexunit_id': lexunit.ID,
+                #  'lemma_name': lemma_name,
+                #  'pos': pos,
+                #  'fn_id': frame.ID,
+                #  'lang': lang}
                 
