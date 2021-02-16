@@ -6,14 +6,38 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import timebankpttoolkit.timebankptcorpus as timebankpt
+from datetime import datetime, timezone
+import uuid
 
+from db import SentenceAnnotator, Annotator, LemmaFN, EventTBPT, TimeExpTBPT, Sentence, engine
 
 def create_session():
-    global engine
     global Session
-    engine = create_engine('sqlite:///tefa.db', echo=True)
     Session = sessionmaker(bind=engine)
 
+def now():
+    return datetime.now(timezone.utc)
+
+def create_annotator(email):
+    session = Session()
+    annotator = Annotator(email=email, created_at=now())
+    session.add(annotator)
+    session.commit()
+    create_all_sentence_annotator(annotator)
+    return annotator
+
+def create_all_sentence_annotator(annotator):
+    session = Session()
+    for sentence in session.query(Sentence).all():
+        session.add(SentenceAnnotator(annotator_id=annotator.email,
+                                      sentence_id=sentence.id,
+                                      status='todo'))
+    session.commit()
+    
+def get_all_annotators():
+    session = Session()
+    return session.query(Annotator).all()
+    
 def query_lemma(lemma_name):
     session = Session()
     return session.query(LemmaFN).filter_by(lemma=lemma_name).all()
@@ -23,6 +47,13 @@ def query_frameid(lemma_name):
     return {out[0] for out in session.query(LemmaFN.frameid).filter_by(lemma=lemma_name).all()}
 
 
+def load_sentences(annotator_id, status):
+    session = Session()
+    return session.query(Sentence).\
+                   join(SentenceAnnotator, Sentence.id==SentenceAnnotator.sentence_id).\
+                   join(Annotator, Annotator.email==SentenceAnnotator.annotator_id).\
+                   filter(SentenceAnnotator.status==status).\
+                   all()
 
 def str_uuid():
     return str(uuid.uuid4())
@@ -30,7 +61,7 @@ def str_uuid():
 def load_timebankpt_data(corpus_dir):
     session = Session()
     corpus = timebankpt.TimeBankPTCorpus('tbpt', corpus_dir)
-    for (doc_name, doc) in corpus.documents_by_target('train').items():
+    for (doc_name, doc) in corpus.documents_by_target().items():
         for (i, sent) in enumerate(doc.get_sentences()):
             sent_id = str_uuid()
             sentence = Sentence(id=sent_id, text=sent.get_text(), document_name=doc_name, position=i)

@@ -44,7 +44,6 @@ class EventFE(Base):
 
     event_fn = relationship("EventFN", back_populates="fes")
 
-
     
 class Sentence(Base):
     __tablename__ = 'sentence'
@@ -91,7 +90,7 @@ class EventANN(Base):
     created_at = Column(DateTime)
     posted_at = Column(DateTime)
     updated_at = Column(DateTime)
-    annotator_id = Column(String, ForeignKey('annotator.id'))
+    annotator_id = Column(String, ForeignKey('annotator.email'))
 
     annotator = relationship('Annotator', back_populates='events_ann')
     args_ann = relationship('ArgANN', back_populates='event_ann')
@@ -107,7 +106,7 @@ class ArgANN(Base):
     updated_at = Column(DateTime)
     event_fe_id = Column(Integer, ForeignKey('event_fe.id'), primary_key=True)
     event_ann_id = Column(String, ForeignKey('event_ann.id'), primary_key=True)
-    annotator_id = Column(String, ForeignKey('annotator.id'), primary_key=True)
+    annotator_id = Column(String, ForeignKey('annotator.email'), primary_key=True)
     annotator = relationship('Annotator', back_populates='args_ann')
     event_ann = relationship('EventANN', back_populates='args_ann')
 
@@ -115,8 +114,7 @@ class ArgANN(Base):
 class Annotator(Base):
     __tablename__ = 'annotator'
 
-    id = Column(String, primary_key=True)
-    email = Column(String)
+    email = Column(String, primary_key=True)
     created_at = Column(DateTime)
     posted_at = Column(DateTime)
     
@@ -127,7 +125,7 @@ class SentenceAnnotator(Base):
     __tablename__ = 'sentence_annotator'
 
     status = Column(String)
-    annotator_id = Column(String, ForeignKey('annotator.id'), primary_key=True)
+    annotator_id = Column(String, ForeignKey('annotator.email'), primary_key=True)
     sentence_id = Column(String, ForeignKey('sentence.id'), primary_key=True)
 
     

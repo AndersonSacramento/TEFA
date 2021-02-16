@@ -27,10 +27,11 @@ class ScrolledList(Frame):
         sbar.pack(side=RIGHT, fill=Y)
         list.pack(side=LEFT, expand=YES, fill=BOTH)
         pos = 0
-        for label in options['data']:
-            list.insert(pos, label)
-            pos += 1
-            #list.config(selectmode=SINGLE, setgrid=1)
+        if 'data' in options:
+            for label in options['data']:
+                list.insert(pos, label)
+                pos += 1
+                #list.config(selectmode=SINGLE, setgrid=1)
         
         self.left_mouse_handle = lambda i, s: None
         
