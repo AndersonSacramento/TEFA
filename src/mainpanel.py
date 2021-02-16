@@ -1,6 +1,7 @@
+from sentencespanel import SentencesPanel
+from loginpanel import LoginPanel
 from tkinter import *
-from scrolledlist import ScrolledList
-
+import _thread, queue, time
 
 
 class MainPanel(Frame):
@@ -9,19 +10,29 @@ class MainPanel(Frame):
         Frame.__init__(self, parent)
         self.pack(expand=YES, fill=BOTH)
         self.makeWidgets(options)
+        self.options = options
 
 
     def makeWidgets(self, options):
-        self.todo_scroll = ScrolledList(options['todo'], parent=self)
-        self.doing_scroll = ScrolledList(options['doing'], parent=self)
-        self.done_scroll = ScrolledList(options['done'], parent=self)
+        self.login_frame = LoginPanel(options, parent=self)
+        self.login_frame.set_on_load_annotator(self.load_sentences_frame)
 
-        self.todo_scroll.pack(side=LEFT, expand=YES, fill=BOTH)
-        self.doing_scroll.pack(side=LEFT, expand=YES, fill=BOTH)
-        self.done_scroll.pack(side=LEFT, expand=YES, fill=BOTH)
+    def load_sentences_frame(self):
+        self.login_frame.pack_forget()
+        self.back_btn = Button(self, text='Retornar', command=self.handle_back_btn)
+        self.back_btn.pack(side=LEFT)
+        self.sentences_frame = SentencesPanel(options, parent=self)
+        self.sentences_frame.pack(side=TOP, expand=YES, fill=BOTH)
 
+    def handle_back_btn(self):
+        self.back_btn.pack_forget()
+        self.sentences_frame.pack_forget()
+        self.login_frame.pack(side=TOP, expand=YES, fill=BOTH)
+
+        
 if __name__ == '__main__':
-    options = {'todo':{'title': 'To Do', 'data':['sent1', 'sent2']},
-               'doing':{'title': 'Doing', 'data':[]},
-               'done': {'title': 'Done', 'data':['sent0'] }}
+    options = {'todo':{'title': 'Anotar', 'data':['sent1', 'sent2']},
+               'doing':{'title': 'Anotando', 'data':[]},
+               'done': {'title': 'Anotado', 'data':['sent0'] },
+               'annotators':{'title': 'Anotadores', 'data':['ander@mail.com', 'silva@gmail.com']}}
     MainPanel(options).mainloop()

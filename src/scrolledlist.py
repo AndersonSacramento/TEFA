@@ -11,8 +11,12 @@ class ScrolledList(Frame):
     def handleList(self, event):
         index = self.listbox.curselection()
         label = self.listbox.get(index)
-        self.runCommand(label)
+        return index, label
 
+    def config_listbox(self, **configs):
+        print(configs)
+        self.listbox.config(**configs)
+        
     def makeWidgets(self, options):
         print(options)
         Label(self, text=options['title']).pack(side=TOP)
@@ -27,13 +31,43 @@ class ScrolledList(Frame):
             list.insert(pos, label)
             pos += 1
             #list.config(selectmode=SINGLE, setgrid=1)
-        list.bind('<Double-1>', self.handleList)
+        
+        self.left_mouse_handle = lambda i, s: None
+        
+        self.middle_mouse_handle = lambda i, s: None
+        
+        self.right_mouse_handle = lambda i, s: None
         self.listbox = list
 
-    def runCommand(self, selection):
-        print('You selected:', selection)
+    def remove_line(self, i):
+        self.listbox.delete(i)
 
+    def add_line(self, i, s):
+        self.listbox.insert(i, s)
+        
+    def set_left_mouse_handle(self, func):
+        self.left_mouse_handle = func
+        self.listbox.bind('<Button-1>', self.handle_left_mouse)
 
+    def set_middle_mouse_handle(self, func):
+        self.middle_mouse_handle = func
+        self.listbox.bind('<Button-2>', self.handle_middle_mouse)
+
+    def set_right_mouse_handle(self, func):
+        self.right_mouse_handle = func
+        self.listbox.bind('<Button-3>', self.handle_right_mouse)
+        
+    def handle_left_mouse(self, event):
+        index, selection = self.handleList(event)
+        self.left_mouse_handle(index, selection)
+
+    def handle_middle_mouse(self, event):
+        index, selection = self.handleList(event)
+        self.middle_mouse_handle(index, selection)
+
+    def handle_right_mouse(self, event):
+        index, selection = self.handleList(event)
+        self.right_mouse_handle(index, selection)
 
 if __name__ == '__main__':
     options = (('Lumberjack-%s' % x) for x in range(20))
