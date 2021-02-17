@@ -49,12 +49,23 @@ def query_frameid(lemma_name):
 
 def load_sentences(annotator_id, status):
     session = Session()
-    return session.query(Sentence).\
+    sentences = session.query(Sentence).\
                    join(SentenceAnnotator, Sentence.id==SentenceAnnotator.sentence_id).\
                    join(Annotator, Annotator.email==SentenceAnnotator.annotator_id).\
                    filter(SentenceAnnotator.status==status).\
                    all()
+    #session.commit()
+    return sentences
+    
+def change_sentence_status(sentence, email, status):
+    session = Session()
+    sentence_annotator = session.query(SentenceAnnotator).filter_by(annotator_id=email, sentence_id=sentence.id).first()
+    if sentence_annotator:
+        sentence_annotator.status = status
+    print(sentence_annotator)
+    session.commit()
 
+    
 def str_uuid():
     return str(uuid.uuid4())
     
@@ -63,6 +74,7 @@ def load_timebankpt_data(corpus_dir):
     corpus = timebankpt.TimeBankPTCorpus('tbpt', corpus_dir)
     for (doc_name, doc) in corpus.documents_by_target().items():
         for (i, sent) in enumerate(doc.get_sentences()):
+            if not sent.has_events(): continue
             sent_id = str_uuid()
             sentence = Sentence(id=sent_id, text=sent.get_text(), document_name=doc_name, position=i)
             session.add(sentence)

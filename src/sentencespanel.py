@@ -2,7 +2,17 @@ from scrolledlist import ScrolledList
 from tkinter import *
 import _thread, queue, time
 import fnutils
+from copy import copy
 
+
+
+class SentenceViewObj():
+
+    def __init__(self, id, text):
+        self.id = id
+        self.text = text
+
+        
 class SentencesPanel(Frame):
 
     def __init__(self, options, parent=None):
@@ -28,15 +38,20 @@ class SentencesPanel(Frame):
         self.doing_scroll.pack(side=LEFT, expand=YES, fill=BOTH)
         self.done_scroll.pack(side=LEFT, expand=YES, fill=BOTH)
 
-        self.todo_scroll.set_right_mouse_handle(lambda i,s: self.todo_to_doing(i,s))
+        self.todo_scroll.set_right_mouse_handle(lambda i,s: self.todo_to_doing(i[0],s))
 
-        self.doing_scroll.set_left_mouse_handle(lambda i,s: self.doing_to_todo(i,s))
-        self.doing_scroll.set_right_mouse_handle(lambda i,s: self.doing_to_done(i,s))
+        self.doing_scroll.set_left_mouse_handle(lambda i,s: self.doing_to_todo(i[0],s))
+        self.doing_scroll.set_right_mouse_handle(lambda i,s: self.doing_to_done(i[0],s))
 
-        self.done_scroll.set_left_mouse_handle(lambda i,s: self.done_to_doing(i,s))
+        self.done_scroll.set_left_mouse_handle(lambda i,s: self.done_to_doing(i[0],s))
 
     def load_content(self):
         self.set_email(self.options['email'])
+
+        self.todo_sentences = []
+        self.doing_sentences = []
+        self.done_sentences = []
+        
         _thread.start_new_thread(self.load_sentences, ('todo',))
         _thread.start_new_thread(self.load_sentences, ('doing',))
         _thread.start_new_thread(self.load_sentences, ('done',))
@@ -49,31 +64,53 @@ class SentencesPanel(Frame):
         self.email = email
         
     def load_sentences(self, status):
-        status_queue = {'todo': self.todo_queue ,
-                        'doing':self.doing_queue,
-                        'done': self.done_queue}
+        status_queue = {'todo': (self.todo_queue, self.todo_sentences) ,
+                        'doing': (self.doing_queue, self.doing_sentences),
+                        'done': (self.done_queue, self.done_sentences)}
         for sentence in fnutils.load_sentences(self.email, status):
-            status_queue[status].put(sentence)
+            queue, sentences_list  = status_queue[status]
+            
+            queue.put(copy(sentence))#SentenceViewObj(sentence.id, sentence.text))
+            sentences_list.append(copy(sentence))
 
     def todo_to_doing(self, i, s):
         print('todo_to_doing {} {}'.format(i,s))
         self.todo_scroll.remove_line(i)
+        sentence = self.todo_sentences[i]
+        self.doing_sentences.insert(0, sentence)
+        self.todo_sentences.remove(sentence)
         self.doing_scroll.add_line(0, s)
+        _thread.start_new_thread(self.change_sentence_status, (sentence, 'doing'))
 
     def doing_to_todo(self, i, s):
         print('doing_to_todo {} {}'.format(i,s))
         self.doing_scroll.remove_line(i)
+        sentence = self.doing_sentences[i]
+        self.todo_sentences.insert(0, sentence)
+        self.doing_sentences.remove(sentence)
         self.todo_scroll.add_line(0, s)
+        _thread.start_new_thread(self.change_sentence_status, (sentence, 'todo'))
 
     def doing_to_done(self, i, s):
         print('doing_to_done {} {}'.format(i,s))
         self.doing_scroll.remove_line(i)
+        sentence = self.doing_sentences[i]
+        self.done_sentences.insert(0, sentence)
+        self.doing_sentences.remove(sentence)
         self.done_scroll.add_line(0, s)
+        _thread.start_new_thread(self.change_sentence_status, (sentence, 'done'))
 
     def done_to_doing(self, i, s):
         print('done_to_doing {} {}'.format(i,s))
         self.done_scroll.remove_line(i)
+        sentence = self.done_sentences[i]
+        self.doing_sentences.insert(0, sentence)
+        self.done_sentences.remove(sentence)
         self.doing_scroll.add_line(i, s)
+        _thread.start_new_thread(self.change_sentence_status, (sentence, 'doing'))
+
+    def change_sentence_status(self, sentence, status):
+        fnutils.change_sentence_status(sentence, self.email, status)
 
     def update_done_sentence_list(self):
         try:
@@ -82,7 +119,7 @@ class SentencesPanel(Frame):
             pass
         else:
             self.done_scroll.add_line(END, sentence.text)
-        self.after(250, lambda: self.update_done_sentence_list())
+        self.after(50, lambda: self.update_done_sentence_list())
 
     def update_doing_sentence_list(self):
         try:
@@ -91,7 +128,7 @@ class SentencesPanel(Frame):
             pass
         else:
             self.doing_scroll.add_line(END, sentence.text)
-        self.after(250, lambda: self.update_doing_sentence_list())
+        self.after(50, lambda: self.update_doing_sentence_list())
 
     def update_todo_sentence_list(self):
         try:
@@ -100,7 +137,7 @@ class SentencesPanel(Frame):
             pass
         else:
             self.todo_scroll.add_line(END, sentence.text)
-        self.after(250, lambda: self.update_todo_sentence_list())        
+        self.after(50, lambda: self.update_todo_sentence_list())        
         
 if __name__ == '__main__':
     options = {'todo':{'title': 'Anotar', 'data':['sent1', 'sent2']},

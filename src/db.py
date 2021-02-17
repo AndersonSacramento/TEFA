@@ -128,6 +128,7 @@ class SentenceAnnotator(Base):
     annotator_id = Column(String, ForeignKey('annotator.email'), primary_key=True)
     sentence_id = Column(String, ForeignKey('sentence.id'), primary_key=True)
 
-    
+    def __repr__(self):
+        return '<SentenceAnnotator(status=%s, annotator_id=%s, sentence_id=%s)' % (self.status, self.annotator_id, self.sentence_id)
 Base.metadata.create_all(engine)
 

@@ -65,5 +65,5 @@ class LoginPanel(Frame):
 
 if __name__ == '__main__':
     options = {'annotators':{'title': 'Anotadores'}}#, 'data':['ander@mail.com', 'silva@gmail.com']}}
-    fnutils.create_session()
+    #fnutils.create_session()
     LoginPanel(options).mainloop()

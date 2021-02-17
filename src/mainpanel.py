@@ -4,6 +4,7 @@ from tkinter import *
 import _thread, queue, time
 import fnutils
 
+
 class MainPanel(Frame):
 
     def __init__(self, options, parent=None):
