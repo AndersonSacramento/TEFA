@@ -52,7 +52,8 @@ def load_sentences(annotator_id, status):
     sentences = session.query(Sentence).\
                    join(SentenceAnnotator, Sentence.id==SentenceAnnotator.sentence_id).\
                    join(Annotator, Annotator.email==SentenceAnnotator.annotator_id).\
-                   filter(SentenceAnnotator.status==status).\
+                   filter(SentenceAnnotator.status==status,
+                          SentenceAnnotator.annotator_id==annotator_id).\
                    all()
     #session.commit()
     return sentences
