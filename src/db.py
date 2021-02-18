@@ -93,7 +93,7 @@ class EventANN(Base):
     annotator_id = Column(String, ForeignKey('annotator.email'))
 
     annotator = relationship('Annotator', back_populates='events_ann')
-    args_ann = relationship('ArgANN', back_populates='event_ann')
+    args_ann = relationship('ArgANN', back_populates='event_ann', lazy='subquery')
     
 
 class ArgANN(Base):

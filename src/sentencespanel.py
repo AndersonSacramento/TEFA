@@ -1,4 +1,5 @@
 from scrolledlist import ScrolledList
+from sentenceannotation import SentenceAnnotation
 from tkinter import *
 import _thread, queue, time
 import fnutils
@@ -42,6 +43,7 @@ class SentencesPanel(Frame):
 
         self.doing_scroll.set_left_mouse_handle(lambda i,s: self.doing_to_todo(i[0],s))
         self.doing_scroll.set_right_mouse_handle(lambda i,s: self.doing_to_done(i[0],s))
+        self.doing_scroll.set_middle_mouse_handle(lambda i, s: self.annotate_sentence(i[0], s))
 
         self.done_scroll.set_left_mouse_handle(lambda i,s: self.done_to_doing(i[0],s))
 
@@ -73,6 +75,18 @@ class SentencesPanel(Frame):
             queue.put(copy(sentence))#SentenceViewObj(sentence.id, sentence.text))
             sentences_list.append(copy(sentence))
 
+    def annotate_sentence(self, i, s):
+        if self.doing_sentences:
+            sentence = self.doing_sentences[i]
+            win = Toplevel()
+            self.options['annotator_id'] = self.email
+            self.options['sentence_id'] =  sentence.id
+            SentenceAnnotation(self.options, parent=win)
+            win.focus_set()
+            win.grab_set()
+            win.wait_window()
+
+    
     def todo_to_doing(self, i, s):
         print('todo_to_doing {} {}'.format(i,s))
         self.todo_scroll.remove_line(i)

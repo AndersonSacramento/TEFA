@@ -26,6 +26,29 @@ def create_annotator(email):
     create_all_sentence_annotator(annotator)
     return annotator
 
+
+
+def delete_previous(event_ann, args_ann):
+    session = Session()
+    session.query(EventANN).filter(EventANN.event_id==event_ann.event_id, EventANN.annotator_id==event_ann.annotator_id).\
+        delete(synchronize_session='fetch')
+    for arg_ann in args_ann:
+            session.query(ArgANN).filter(ArgANN.event_fe_id==arg_ann.event_fe_id, ArgANN.event_ann_id==arg_ann.event_ann_id, ArgANN.annotator_id==arg_ann.annotator_id).\
+                delete(synchronize_session='fetch')
+    session.commit()
+    session.close()
+    
+def save_event_ann(event_ann):
+    session = Session()
+    session.add(event_ann)
+    session.commit()
+
+def save_args_ann(args_ann):
+    session = Session()
+    for arg_ann in args_ann:
+        session.add(arg_ann)
+    session.commit()
+
 def create_all_sentence_annotator(annotator):
     session = Session()
     for sentence in session.query(Sentence).all():
@@ -33,6 +56,8 @@ def create_all_sentence_annotator(annotator):
                                       sentence_id=sentence.id,
                                       status='todo'))
     session.commit()
+
+
     
 def get_all_annotators():
     session = Session()

@@ -7,18 +7,20 @@ from tkinter import ttk
 import _thread, queue, time
 import fnutils
 from db import ArgANN
-
+from copy import copy
 
 class SentenceAnnotation(Frame):
 
     def __init__(self, options, parent=None):
         Frame.__init__(self, parent)
         self.pack(expand=YES, fill=BOTH)
-        self.make_widgets(options)
         self.options = options
+        self.options['suggestion'] = {'title': 'Sugestões'}
+        self.options['all'] = {'title': 'Todos' }
         self.sentence_queue = queue.Queue()
         self.cur_event_ann = None
-        self.load_content(options)
+        self.make_widgets(self.options)
+        self.load_content(self.options)
 
 
     def make_widgets(self, options):
@@ -68,11 +70,19 @@ class SentenceAnnotation(Frame):
             events_ann = fnutils.query_events_ann(annotator_id, [e.id for e in sentence.events])
             if events_ann:
                 self.events_ann = events_ann
+                print('events ann recovered')
             self.sentence_queue.put(sentence)
             
 
     def save_annotation(self):
-        pass
+        for event_ann in self.events_ann:
+            event_ann.annotator_id = self.options['annotator_id']
+            for arg_ann in event_ann.args_ann:
+                arg_ann.annotator_id = self.options['annotator_id']
+            #fnutils.delete_previous(event_ann, event_ann.args_ann)
+            fnutils.save_event_ann(event_ann)
+            #fnutils.save_args_ann(event_ann.args_ann)
+        self.quit()
 
     def preview_annotation(self):
         pass
@@ -107,7 +117,7 @@ class SentenceAnnotation(Frame):
                                                      created_at=fnutils.now(),
                                                      event_fe_id=fe.ID,
                                                      event_ann_id=self.cur_event_ann.id,
-                                                              annotator_id=options['annotator_id']))
+                                                              annotator_id=self.options['annotator_id']))
                     print('create arg_ann')
                                                      
             
@@ -116,19 +126,34 @@ class SentenceAnnotation(Frame):
         print('annotate arg %s \n %s %s %s' % (text, str(self.sentence_text_view.index(sel_first_pos)), str(self.sentence_text_view.index(sel_last_pos)), str(len(self.sentence_text_view.get('0.0', END)))))
 
 
+    def load_event_ann_tags(self):
+        if self.cur_event_ann:
+            for arg_ann in self.cur_event_ann.args_ann:
+                tag_name = '%s-%s' % (arg_ann.event_fe_id, self.cur_event_ann.id)
+                self.sentence_text_view.tag_remove(tag_name,'1.0', END)
+                self.sentence_text_view.tag_add(tag_name, '1.%s' % arg_ann.start_at, '1.%s' % arg_ann.end_at)
+                fe_color = self.fe_selection.get_fe_color(arg_ann.event_fe_id)
+                self.sentence_text_view.tag_config(tag_name, background=fe_color)
+
+
     def event_type_selection_handler(self, event_ann, frame):
         if self.cur_event_ann:
             for arg_ann in self.cur_event_ann.args_ann:
                 tag_name = '%s-%s' % (arg_ann.event_fe_id, self.cur_event_ann.id)
                 self.sentence_text_view.tag_delete(tag_name,'1.0', END)
-            
+                print('delete tag')
+            #if event_ann and self.cur_event_ann.event_fn_id != event_ann.event_fn_id:
+            #    event_ann.args_ann = []
+            #    print('set empty list')
+
+        self.cur_event_ann = event_ann
         if event_ann and frame:
             print('Frame name: %s \n event_id: %s \n event_args %s' % (frame.name, event_ann.event_id, event_ann.args_ann))
-            self.cur_event_ann = event_ann
             self.fe_selection.set_args_ann(event_ann.args_ann)
             self.fe_selection.set_fes(fnutils.filter_core_fe(frame))
         else:
             self.fe_selection.clear_args_rows()
+        self.load_event_ann_tags()
             
         
     def update_sentence_text(self):

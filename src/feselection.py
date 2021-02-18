@@ -10,7 +10,7 @@ class FESelection(Frame):
     def __init__(self, options, parent=None):
         Frame.__init__(self, parent)
         self.pack(expand=YES, fill=BOTH)
-        self.fes_colors =  ['#85E314', '#33E4CF', '#F14EAA', '#F1D54A', '#E67D57', '#F3BCBC']
+        self.fes_colors =  ['#85E314', '#33E4CF', '#F14EAA', '#F1D54A', '#E67D57', '#F3BCBC', '#B18904', '#2E9AFE', '#FA5858', '#A4A4A4', '#81F781']
         self.fes = []
         self.args_ann = []
         self.make_list_fes(options)
@@ -52,6 +52,14 @@ class FESelection(Frame):
             return (self.fes[fe_index], self.fes_colors[fe_index])
         else:
             return None
+
+    def get_fe_color(self, fe_id):
+        i = 0
+        for fe in self.fes:
+            if fe.ID == fe_id:
+                break
+            i += 1
+        return self.fes_colors[i]
         
     def create_fes_radios(self):
         self.clear_args_rows()

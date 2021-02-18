@@ -49,6 +49,7 @@ class FrameSelection(Frame):
         label.pack(side=TOP, anchor=W)
         label.config(textvariable=self.var_event_type)
 
+        print('Options here %s' % options)
         self.suggestion_scroll = ScrolledList(options['suggestion'], parent=self)
         self.all_scroll = ScrolledList(options['all'], parent=self)
         
@@ -77,15 +78,18 @@ class FrameSelection(Frame):
     def create_or_update_event_ann(self, event_id, frame_id):
         if self.events_ann:
             event_ann = fnutils.find_event_ann(self.events_ann, event_id)
+            #if event_ann:
+            #    event_ann.event_fn_id = frame_id
+            #else:
             if event_ann:
-                event_ann.event_fn_id = frame_id
-            else:
-                event_ann = EventANN(id=fnutils.str_uuid(),
+                self.events_ann.remove(event_ann)
+                fnutils.delete_previous(event_ann, event_ann.args_ann)
+            event_ann = EventANN(id=fnutils.str_uuid(),
                                      event_id=event_id,
                                      event_fn_id=frame_id,
                                      created_at=fnutils.now(),
                                      updated_at=fnutils.now())
-                self.events_ann.append(event_ann)
+            self.events_ann.append(event_ann)    
         else:
             event_ann = EventANN(id=fnutils.str_uuid(),
                                  event_id=event_id,
@@ -141,10 +145,11 @@ class FrameSelection(Frame):
         i = self.triggers_combo.current()
         
         if self.events and self.events_ann:
+            print('frame selection events_ann')
             event_tbpt = self.events[i]
             event_ann = fnutils.find_event_ann(self.events_ann, event_tbpt.id)
             if event_ann:
-                frame = self.selected_frames.get(event_ann.event_fn_id)
+                frame = self.selected_frames.get(event_ann.event_fn_id) or fnutils.frame_by_id(event_ann.event_fn_id)
                 if frame:
                     self.var_event_type.set('Tipo: %s' % frame.name)
                     if self.event_ann_type_selection_handler:
