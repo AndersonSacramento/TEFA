@@ -3,6 +3,7 @@ from scrolledtext import ScrolledText
 from tkinter import *
 from tkinter import ttk
 import _thread, queue, time
+from db import EventANN
 import fnutils
 
 
@@ -16,17 +17,30 @@ class FrameSelection(Frame):
         self.options = options
         self.suggestions_queue = queue.Queue()
         self.all_frames_queue = queue.Queue()
+        self.events = []
+        self.selected_frames = dict()
+        self.event_ann_type_selection_handler = None
         self.load_content()
 
+    
+    def set_events(self, events):
+        self.events = events
+        self.triggers_combo.config(values=[e.trigger for e in events])
 
+    def set_events_ann(self, events_ann):
+        self.events_ann = events_ann
+
+    def set_event_ann_type_selection_handler(self, func):
+        self.event_ann_type_selection_handler = func
+        
     def make_widgets(self, options):
-        vlist = options['triggers']
+        #vlist = options['triggers']
         self.trigger_var = StringVar()
         self.trigger_var.set("Selecione um gatilho")
-        self.triggers_combo = ttk.Combobox(self, values=vlist)
+        self.triggers_combo = ttk.Combobox(self)#
         self.triggers_combo.config(textvariable=self.trigger_var)
         self.triggers_combo.pack(side=TOP)
-        self.triggers_combo.current(0)
+        #self.triggers_combo.current(0)
         self.triggers_combo.bind("<<ComboboxSelected>>", self.trigger_change_handler)
 
         self.var_event_type = StringVar()
@@ -42,9 +56,9 @@ class FrameSelection(Frame):
         self.suggestion_scroll.pack(side=TOP, expand=YES, fill=BOTH)
         self.all_scroll.pack(side=TOP, expand=YES, fill=BOTH)
 
-        middle_handler = lambda i, s: self.event_type_selection(i[0], s)
-        self.suggestion_scroll.set_middle_mouse_handle(middle_handler)
-        self.all_scroll.set_middle_mouse_handle(middle_handler)
+    
+        self.suggestion_scroll.set_middle_mouse_handle(lambda i, s: self.event_type_selection_suggestion(i[0], s))
+        self.all_scroll.set_middle_mouse_handle(lambda i, s: self.event_type_selection_all(i[0], s))
 
         self.suggestion_scroll.set_double_1_handler(lambda i, s: self.event_view_frame_suggestion(i[0], s))
         self.all_scroll.set_double_1_handler(lambda i, s: self.event_view_frame_all(i[0], s))
@@ -55,11 +69,57 @@ class FrameSelection(Frame):
         self.update_suggestions_list()
         self.update_all_frames_list()
         self.trigger_change_handler(None)
-        
-    def event_type_selection(self, i, s):
-        self.var_event_type.set('Tipo: %s' % s)
-        print(s)
 
+    def _event_by_position(self, i):
+        if self.events:
+            return self.events[i]
+
+    def create_or_update_event_ann(self, event_id, frame_id):
+        if self.events_ann:
+            event_ann = fnutils.find_event_ann(self.events_ann, event_id)
+            if event_ann:
+                event_ann.event_fn_id = frame_id
+            else:
+                event_ann = EventANN(id=fnutils.str_uuid(),
+                                     event_id=event_id,
+                                     event_fn_id=frame_id,
+                                     created_at=fnutils.now(),
+                                     updated_at=fnutils.now())
+                self.events_ann.append(event_ann)
+        else:
+            event_ann = EventANN(id=fnutils.str_uuid(),
+                                 event_id=event_id,
+                                 event_fn_id=frame_id,
+                                 created_at=fnutils.now(),
+                                 updated_at=fnutils.now())
+            self.events_ann.append(event_ann)
+        return event_ann
+
+    
+    def event_type_selection_suggestion(self, i, s):
+        self.var_event_type.set('Tipo: %s' % s)
+        event_pos = self.triggers_combo.current()
+        event = self._event_by_position(event_pos)
+        if self.suggestions_frames:
+            frame = self.suggestions_frames[i]
+            self.selected_frames[frame.ID] = frame
+            event_ann = self.create_or_update_event_ann(event.id, frame.ID)
+            if self.event_ann_type_selection_handler:
+                self.event_ann_type_selection_handler(event_ann, frame)
+        
+        
+    def event_type_selection_all(self, i, s):
+        self.var_event_type.set('Tipo: %s' % s)
+        event_pos = self.triggers_combo.current()
+        event = self._event_by_position(event_pos)
+        if self.all_frames:
+            frame = self.all_frames[i]
+            self.selected_frames[frame.ID] = frame
+            event_ann = self.create_or_update_event_ann(event.id, frame.ID)
+            if self.event_ann_type_selection_handler:
+                self.event_ann_type_selection_handler(event_ann, frame)
+
+    
     def event_view_frame_suggestion(self, i, s):
         frame = self.suggestions_frames[i]
         if frame:
@@ -78,14 +138,35 @@ class FrameSelection(Frame):
     def trigger_change_handler(self, event):
         trigger = self.trigger_var.get()
         print(trigger)
-        print(self.triggers_combo.current())
+        i = self.triggers_combo.current()
+        
+        if self.events and self.events_ann:
+            event_tbpt = self.events[i]
+            event_ann = fnutils.find_event_ann(self.events_ann, event_tbpt.id)
+            if event_ann:
+                frame = self.selected_frames.get(event_ann.event_fn_id)
+                if frame:
+                    self.var_event_type.set('Tipo: %s' % frame.name)
+                    if self.event_ann_type_selection_handler:
+                        self.event_ann_type_selection_handler(event_ann, frame)
+            else:
+                self.var_event_type.set('Tipo:')
+                if self.event_ann_type_selection_handler:
+                    self.event_ann_type_selection_handler(None, None)
+        else:
+            self.var_event_type.set('Tipo:')
+            if self.event_ann_type_selection_handler:
+                self.event_ann_type_selection_handler(None, None)
+            
         self.suggestions_frames = []
         self.suggestion_scroll.clear_list()
-        _thread.start_new_thread(self.load_frames_suggestions, (trigger,))
+        if self.events:
+            trigger_lemma = self.events[i].lemma
+            _thread.start_new_thread(self.load_frames_suggestions, (trigger_lemma,))
 
         
-    def load_frames_suggestions(self, trigger_name):
-        for frame_id in fnutils.query_frameid(trigger_name):
+    def load_frames_suggestions(self, trigger_lemma):
+        for frame_id in fnutils.query_frameid(trigger_lemma):
             frame = fnutils.frame_by_id(frame_id)
             if frame:
                 self.suggestions_queue.put(frame)

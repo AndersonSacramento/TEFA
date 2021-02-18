@@ -9,7 +9,7 @@ import timebankpttoolkit.timebankptcorpus as timebankpt
 from datetime import datetime, timezone
 import uuid
 
-from db import SentenceAnnotator, Annotator, LemmaFN, EventTBPT, TimeExpTBPT, Sentence, engine
+from db import SentenceAnnotator, Annotator, LemmaFN, EventTBPT, TimeExpTBPT, Sentence, EventANN, ArgANN, engine
 
 def create_session():
     global Session
@@ -46,7 +46,28 @@ def query_frameid(lemma_name):
     session = Session()
     return {out[0] for out in session.query(LemmaFN.frameid).filter_by(lemma=lemma_name).all()}
 
+def frame_by_id(frame_id):
+    return fn.frame(frame_id)
 
+def query_sentence_by(sentence_id):
+    session = Session()
+    return session.query(Sentence).filter_by(id=sentence_id).first()
+
+def find_event_ann(events_ann, event_id):
+    for e_ann in events_ann:
+        if e_ann.event_id == event_id:
+            return e_ann
+
+def find_fe(fes, fe_name):
+    for fe in fes:
+        if fe.name == fe_name:
+            return fe
+        
+        
+def query_events_ann(annotator_id, events_tbpt_ids):
+    session = Session()
+    return session.query(EventANN).filter(EventANN.event_id.in_(events_tbpt_ids),
+                                   annotator_id==annotator_id).all()
 def load_sentences(annotator_id, status):
     session = Session()
     sentences = session.query(Sentence).\
@@ -124,8 +145,15 @@ def get_lemma_from_lexunit_name(lexunit_name, lang='por'):
         return {name for lemma in wn.synsets(name, pos) for name in lemma.lemma_names(lang=lang)}
     except KeyError:
         return {}
-
-
+    
+def all_event_frames():
+    lframes = []
+    for frame in fn.frames():
+        if frame:
+            if not is_event(frame): continue
+            lframes.append(frame)
+    return lframes
+        
 def lemma_frames(lang='por'):
     for frame in fn.frames():
         if not is_event(frame): continue

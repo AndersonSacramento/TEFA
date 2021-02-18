@@ -43,8 +43,16 @@ class ScrolledList(Frame):
     def remove_line(self, i):
         self.listbox.delete(i)
 
+    def clear_list(self):
+        self.listbox.delete(0,END)
+
     def add_line(self, i, s):
         self.listbox.insert(i, s)
+
+
+    def set_double_1_handler(self, func):
+        self.double_1_handler = func
+        self.listbox.bind('<Double-1>', self.handler_double_1)
         
     def set_left_mouse_handle(self, func):
         self.left_mouse_handle = func
@@ -57,6 +65,10 @@ class ScrolledList(Frame):
     def set_right_mouse_handle(self, func):
         self.right_mouse_handle = func
         self.listbox.bind('<Button-3>', self.handle_right_mouse)
+
+    def handler_double_1(self, event):
+        index, selection = self.handleList(event)
+        self.double_1_handler(index, selection)
         
     def handle_left_mouse(self, event):
         index, selection = self.handleList(event)
