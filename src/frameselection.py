@@ -125,6 +125,7 @@ class FrameSelection(Frame):
 
     
     def event_view_frame_suggestion(self, i, s):
+        print('frame suggestion position double-1 : %s ' % i)
         frame = self.suggestions_frames[i]
         if frame:
             self.load_view_frame_info(frame)
@@ -174,8 +175,8 @@ class FrameSelection(Frame):
         for frame_id in fnutils.query_frameid(trigger_lemma):
             frame = fnutils.frame_by_id(frame_id)
             if frame:
-                self.suggestions_queue.put(frame)
                 self.suggestions_frames.append(frame)
+        self.suggestions_queue.put(self.suggestions_frames)
 
     def load_all_frames_list(self):
         for frame in sorted(fnutils.all_event_frames(), key=lambda f: f.name):
@@ -184,11 +185,13 @@ class FrameSelection(Frame):
 
     def update_suggestions_list(self):
         try:
-            frame = self.suggestions_queue.get(block=False)
+            frames = self.suggestions_queue.get(block=False)
         except queue.Empty:
             pass
         else:
-            self.suggestion_scroll.add_line(END, frame.name)
+            self.suggestion_scroll.clear_list()
+            for frame in frames:
+                self.suggestion_scroll.add_line(END, frame.name)
         self.after(50, lambda: self.update_suggestions_list())
 
 

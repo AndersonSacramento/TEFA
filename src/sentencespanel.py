@@ -82,6 +82,8 @@ class SentencesPanel(Frame):
             self.options['annotator_id'] = self.email
             self.options['sentence_id'] =  sentence.id
             SentenceAnnotation(self.options, parent=win)
+            w, h = self.winfo_screenwidth(), self.winfo_screenheight()
+            win.geometry("%dx%d+0+0" % (w, h))
             win.focus_set()
             win.grab_set()
             win.wait_window()
