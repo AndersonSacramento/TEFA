@@ -29,7 +29,7 @@ class SentenceAnnotation(Frame):
         text.config(font=('courier', 15, 'normal'))
         text.config(width=20, height=12)
         text.pack(side=TOP, expand=YES, fill=BOTH)
-        
+        text.bind("<Key>", lambda e: "break")
         self.sentence_text_view = text
 
         self.fe_selection = FESelection(options, parent=left_frame)

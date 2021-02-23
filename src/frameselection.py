@@ -138,6 +138,7 @@ class FrameSelection(Frame):
     def load_view_frame_info(self, frame):
         win = Toplevel()
         scroll_text = ScrolledText(win, text=str(frame))
+        scroll_text.get_text_widget().bind("<Key>", lambda e: "break")
         win.focus_set()
         
     def trigger_change_handler(self, event):
