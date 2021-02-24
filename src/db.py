@@ -130,5 +130,7 @@ class SentenceAnnotator(Base):
 
     def __repr__(self):
         return '<SentenceAnnotator(status=%s, annotator_id=%s, sentence_id=%s)' % (self.status, self.annotator_id, self.sentence_id)
+
+
 Base.metadata.create_all(engine)
 

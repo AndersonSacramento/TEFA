@@ -18,6 +18,8 @@ class MainPanel(Frame):
         self.login_frame = LoginPanel(options, parent=self)
         self.login_frame.set_on_load_annotator(self.load_sentences_frame)
 
+        
+
     def load_sentences_frame(self, email):
         self.login_frame.pack_forget()
         self.back_btn = Button(self, text='Retornar', command=self.handle_back_btn)
@@ -25,6 +27,7 @@ class MainPanel(Frame):
         self.options['email'] = email
         self.sentences_frame = SentencesPanel(self.options, parent=self)
         self.sentences_frame.pack(side=TOP, expand=YES, fill=BOTH)
+        
 
     def handle_back_btn(self):
         self.back_btn.pack_forget()
@@ -38,4 +41,8 @@ if __name__ == '__main__':
                'done': {'title': 'Anotado'},#, 'data':['sent0'] },
                'annotators':{'title': 'Anotadores'}}#'data':['ander@mail.com', 'silva@gmail.com']}}
     fnutils.create_session()
-    MainPanel(options).mainloop()
+    root = Tk()
+    main_panel = MainPanel(options, parent=root)
+    w, h = root.winfo_screenwidth(), root.winfo_screenheight()
+    root.geometry("%dx%d+0+0" % (w, h))
+    root.mainloop()

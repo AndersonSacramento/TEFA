@@ -18,18 +18,25 @@ class SentenceAnnotation(Frame):
         self.options['suggestion'] = {'title': 'Sugestões'}
         self.options['all'] = {'title': 'Todos' }
         self.sentence_queue = queue.Queue()
+        self.events_queue = queue.Queue()
         self.cur_event_ann = None
         self.make_widgets(self.options)
         self.load_content(self.options)
 
 
+    def middle_button_in_text(self):
+        self.sentence_text_view.edit_undo()
+        
     def make_widgets(self, options):
         left_frame = Frame(self)
         text = Text(left_frame)
         text.config(font=('courier', 15, 'normal'))
         text.config(width=20, height=12)
         text.pack(side=TOP, expand=YES, fill=BOTH)
-        text.bind("<Key>", lambda e: "break")
+        text.bind('<KeyPress>', lambda e: self.on_keyboard(e))
+        #text.bind('<Key>', lambda e: 'break')
+        text.bind('<Button-2>', lambda e: self.middle_button_in_text)
+
         self.sentence_text_view = text
 
         self.fe_selection = FESelection(options, parent=left_frame)
@@ -67,11 +74,13 @@ class SentenceAnnotation(Frame):
         self.events_ann = []
         sentence = fnutils.query_sentence_by(sentence_id)
         if sentence:
-            events_ann = fnutils.query_events_ann(annotator_id, [e.id for e in sentence.events])
+            events = fnutils.query_events_sentence(sentence)
+            events_ann = fnutils.query_events_ann(annotator_id, [e.id for e in events])
             if events_ann:
                 self.events_ann = events_ann
                 print('events ann recovered')
             self.sentence_queue.put(sentence)
+            self.events_queue.put(events)
             
 
     def save_annotation(self):
@@ -92,6 +101,17 @@ class SentenceAnnotation(Frame):
             if arg_ann.event_fe_id == fe_id:
                 return arg_ann
             
+
+
+    def on_keyboard(self, event):
+        pressed = event.char
+        if pressed == 'a':
+            self.annotate_arg()
+            return "break"
+        else:
+            return "break"
+        
+        
     def annotate_arg(self):
         text = self.sentence_text_view.get(SEL_FIRST, SEL_LAST)
         if text:
@@ -159,13 +179,14 @@ class SentenceAnnotation(Frame):
     def update_sentence_text(self):
         try:
             self.sentence = self.sentence_queue.get(block=False)
+            events = self.events_queue.get(block=False)
         except queue.Empty:
             pass
         else:
             self.sentence_text_view.delete('1.0', END)
             self.sentence_text_view.insert('1.0', self.sentence.text)
-            print([e.trigger for e in self.sentence.events])
-            self.frame_selection.set_events(self.sentence.events)
+            print([e.trigger for e in events])
+            self.frame_selection.set_events(events)
             self.frame_selection.set_events_ann(self.events_ann)
         self.after(10, lambda: self.update_sentence_text())
 
