@@ -28,6 +28,7 @@ class SentencesPanel(Frame):
 
 
     def makeWidgets(self, options):
+        self.config(takefocus=0)
         self.todo_scroll = ScrolledList(options['todo'], parent=self)
         self.todo_scroll.config_listbox(bg='tomato')
         self.doing_scroll = ScrolledList(options['doing'], parent=self)
@@ -39,13 +40,39 @@ class SentencesPanel(Frame):
         self.doing_scroll.pack(side=LEFT, expand=YES, fill=BOTH)
         self.done_scroll.pack(side=LEFT, expand=YES, fill=BOTH)
 
-        self.todo_scroll.set_right_mouse_handle(lambda i,s: self.todo_to_doing(i[0],s))
+        todo_scroll_right = lambda i,s: self.todo_to_doing(i[0],s)
+        self.todo_scroll.set_right_mouse_handle(todo_scroll_right)
+        self.todo_scroll.set_right_arrow_handler(todo_scroll_right)
+        
 
-        self.doing_scroll.set_left_mouse_handle(lambda i,s: self.doing_to_todo(i[0],s))
-        self.doing_scroll.set_right_mouse_handle(lambda i,s: self.doing_to_done(i[0],s))
-        self.doing_scroll.set_middle_mouse_handle(lambda i, s: self.annotate_sentence(i[0], s))
+        doing_scroll_left = lambda i,s: self.doing_to_todo(i[0],s)
+        self.doing_scroll.set_left_mouse_handle(doing_scroll_left)
+        self.doing_scroll.set_left_arrow_handler(doing_scroll_left)
 
-        self.done_scroll.set_left_mouse_handle(lambda i,s: self.done_to_doing(i[0],s))
+        doing_scroll_right = lambda i,s: self.doing_to_done(i[0],s)
+        self.doing_scroll.set_right_mouse_handle(doing_scroll_right)
+        self.doing_scroll.set_right_arrow_handler(doing_scroll_right)
+        
+        
+        doing_scroll_ann = lambda i, s: self.annotate_sentence(i[0], s)
+        self.doing_scroll.set_double_1_handler(doing_scroll_ann)
+        self.doing_scroll.set_a_key_handler(doing_scroll_ann)
+
+        done_scroll_left = lambda i,s: self.done_to_doing(i[0],s)
+        self.done_scroll.set_left_mouse_handle(done_scroll_left)
+        self.done_scroll.set_left_arrow_handler(done_scroll_left)
+
+
+        # Move between lists
+        self.doing_scroll.set_ctrl_1_handler(lambda i, s: self.todo_scroll.get_list_focus())
+        self.done_scroll.set_ctrl_1_handler(lambda i, s: self.todo_scroll.get_list_focus())
+        
+        self.todo_scroll.set_ctrl_2_handler(lambda i, s: self.doing_scroll.get_list_focus())
+        self.done_scroll.set_ctrl_2_handler(lambda i, s: self.doing_scroll.get_list_focus())
+
+        self.todo_scroll.set_ctrl_3_handler(lambda i, s: self.done_scroll.get_list_focus())
+        self.doing_scroll.set_ctrl_3_handler(lambda i, s: self.done_scroll.get_list_focus())
+
 
     def load_content(self):
         self.set_email(self.options['email'])

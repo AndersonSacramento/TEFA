@@ -14,6 +14,7 @@ class SentenceAnnotation(Frame):
     def __init__(self, options, parent=None):
         Frame.__init__(self, parent)
         self.pack(expand=YES, fill=BOTH)
+        self.parent = parent
         self.options = options
         self.options['suggestion'] = {'title': 'Sugestões'}
         self.options['all'] = {'title': 'Todos' }
@@ -61,6 +62,10 @@ class SentenceAnnotation(Frame):
         btn_frame.pack(side=TOP)
         right_frame.pack(side=RIGHT, expand=YES, fill=BOTH)
 
+
+
+        
+
         
         
 
@@ -78,7 +83,7 @@ class SentenceAnnotation(Frame):
             events_ann = fnutils.query_events_ann(annotator_id, [e.id for e in events])
             if events_ann:
                 self.events_ann = events_ann
-                print('events ann recovered')
+                print('events ann recovered annotator_id: %s' % annotator_id)
             self.sentence_queue.put(sentence)
             self.events_queue.put(events)
             
@@ -91,7 +96,7 @@ class SentenceAnnotation(Frame):
             #fnutils.delete_previous(event_ann, event_ann.args_ann)
             fnutils.save_event_ann(event_ann)
             #fnutils.save_args_ann(event_ann.args_ann)
-        self.quit()
+        Frame.destroy(self.parent)
 
     def preview_annotation(self):
         pass

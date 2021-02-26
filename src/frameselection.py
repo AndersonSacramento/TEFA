@@ -181,8 +181,8 @@ class FrameSelection(Frame):
 
     def load_all_frames_list(self):
         for frame in sorted(fnutils.all_event_frames(), key=lambda f: f.name):
-            self.all_frames_queue.put(frame)
             self.all_frames.append(frame)
+        self.all_frames_queue.put(self.all_frames)
 
     def update_suggestions_list(self):
         try:
@@ -198,11 +198,12 @@ class FrameSelection(Frame):
 
     def update_all_frames_list(self):
         try:
-            frame = self.all_frames_queue.get(block=False)
+            frames = self.all_frames_queue.get(block=False)
         except queue.Empty:
             pass
         else:
-            self.all_scroll.add_line(END, frame.name)
+            for frame in frames:
+                self.all_scroll.add_line(END, frame.name)
         self.after(50, lambda: self.update_all_frames_list())
             
 

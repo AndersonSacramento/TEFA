@@ -119,7 +119,7 @@ def query_events_sentence(sentence):
 def query_events_ann(annotator_id, events_tbpt_ids):
     events_ann = []
     with session_scope() as session:
-        events_ann = session.query(EventANN).filter(EventANN.event_id.in_(events_tbpt_ids), annotator_id==annotator_id).all()
+        events_ann = session.query(EventANN).filter(EventANN.event_id.in_(events_tbpt_ids)).filter_by(annotator_id=annotator_id).all()
     return events_ann
 
 
