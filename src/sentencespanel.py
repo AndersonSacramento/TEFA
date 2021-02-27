@@ -7,13 +7,6 @@ from copy import copy
 
 
 
-class SentenceViewObj():
-
-    def __init__(self, id, text):
-        self.id = id
-        self.text = text
-
-        
 class SentencesPanel(Frame):
 
     def __init__(self, options, parent=None):

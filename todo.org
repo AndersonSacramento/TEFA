@@ -1,6 +1,12 @@
 * features
 ** DONE filter only event frames
 ** DONE filter core fe 
+** filter only annotations that are really frame events  
+** recount the precision
+** start annotation from selected documents
+** start annotation from other user annotation
+** start annotation from selected sentences
+** validate list of events from fn used by lome
 ** filter peripheral fe
 ** populate lemma table
 ** create annotation tables
