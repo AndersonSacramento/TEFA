@@ -103,13 +103,13 @@ class ScrolledList(Frame):
 
 
     def handler_ctrl_1(self, event):
-        self.generic_handler_call(event, self.ctrl_1_handler)
+        self.ctrl_1_handler(0, '')
 
     def handler_ctrl_2(self, event):
-        self.generic_handler_call(event, self.ctrl_2_handler)        
+        self.ctrl_2_handler(0, '')        
 
     def handler_ctrl_3(self, event):
-        self.generic_handler_call(event, self.ctrl_3_handler)        
+        self.ctrl_3_handler(0, '')        
         
     def handler_left_arrow(self, event):
         self.generic_handler_call(event, self.left_arrow_handler)

@@ -28,7 +28,7 @@ class SentencesPanel(Frame):
 
 
     def makeWidgets(self, options):
-        self.config(takefocus=0)
+        #self.config(takefocus=0)
         self.todo_scroll = ScrolledList(options['todo'], parent=self)
         self.todo_scroll.config_listbox(bg='tomato')
         self.doing_scroll = ScrolledList(options['doing'], parent=self)
@@ -96,6 +96,7 @@ class SentencesPanel(Frame):
         status_queue = {'todo': (self.todo_queue, self.todo_sentences) ,
                         'doing': (self.doing_queue, self.doing_sentences),
                         'done': (self.done_queue, self.done_sentences)}
+        # load sentence from annotator lome
         for sentence in fnutils.load_sentences(self.email, status):
             queue, sentences_list  = status_queue[status]
             

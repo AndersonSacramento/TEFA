@@ -3,7 +3,7 @@ from scrolledtext import ScrolledText
 from tkinter import *
 from tkinter import ttk
 import _thread, queue, time
-from db import EventANN
+from db import EventANN,  ValEventANN
 import fnutils
 
 
@@ -20,6 +20,7 @@ class FrameSelection(Frame):
         self.events = []
         self.selected_frames = dict()
         self.event_ann_type_selection_handler = None
+        self.event_val_handler = None
         self.load_content()
 
     
@@ -27,6 +28,17 @@ class FrameSelection(Frame):
         self.events = events
         self.triggers_combo.config(values=[e.trigger for e in events])
 
+
+    def set_val_event(self, val_event):
+        print('set val event')
+        if val_event:
+            if val_event.is_wrong():
+                print('val wrong')
+                self.ans_type_event.set('Errado')
+            else:
+                print('val right')
+                self.ans_type_event.set('Certo')
+    
     def set_events_ann(self, events_ann):
         self.events_ann = events_ann
 
@@ -48,6 +60,25 @@ class FrameSelection(Frame):
         label = Label(self)
         label.pack(side=TOP, anchor=W)
         label.config(textvariable=self.var_event_type)
+
+        row_val = Frame(self)
+        lab_type_qs = Label(row_val)
+        lab_type_qs.config(text='Tipo está: ')
+        lab_type_qs.pack(side=LEFT)
+
+        self.ans_type_event = StringVar()
+
+        rad_type_wrong = Radiobutton(row_val, text='Errado', value='Errado', variable=self.ans_type_event, command=(lambda : self.on_press_type_radio_event('wrong')))
+        rad_type_wrong.pack(side=LEFT)
+
+        rad_type_right = Radiobutton(row_val, text='Certo',  value='Certo', variable=self.ans_type_event, command=(lambda : self.on_press_type_radio_event('right')))
+        rad_type_right.pack(side=LEFT)
+        
+
+        row_val.pack(side=TOP, expand=YES, fill=X)
+
+        
+            
 
         print('Options here %s' % options)
         self.suggestion_scroll = ScrolledList(options['suggestion'], parent=self)
@@ -99,7 +130,16 @@ class FrameSelection(Frame):
             self.events_ann.append(event_ann)
         return event_ann
 
-    
+    def on_press_type_radio_event(self, ans):
+        print('type ans %s' % ans)
+        if self.event_val_handler:
+            self.event_val_handler(ValEventANN(status_type=ans))
+        
+
+    def set_event_val_handler(self, func):
+        self.event_val_handler = func
+
+        
     def event_type_selection_suggestion(self, i, s):
         self.var_event_type.set('Tipo: %s' % s)
         event_pos = self.triggers_combo.current()
@@ -140,6 +180,8 @@ class FrameSelection(Frame):
         scroll_text = ScrolledText(win, text=str(frame))
         scroll_text.get_text_widget().bind("<Key>", lambda e: "break")
         win.focus_set()
+        win.grab_set()
+        win.wait_window()
         
     def trigger_change_handler(self, event):
         trigger = self.trigger_var.get()

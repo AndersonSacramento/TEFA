@@ -38,7 +38,9 @@ class LoginPanel(Frame):
         
     def create_annotator(self):
         email = self.email_entry.get()
-        _thread.start_new_thread(self.create_annotator_thread, (email,))
+        email = email.strip()
+        if email and email != 'lome':
+            _thread.start_new_thread(self.create_annotator_thread, (email,))
         print(email)
 
 
@@ -60,7 +62,7 @@ class LoginPanel(Frame):
         self.after(250, lambda: self.update_annotator_list())
 
     def load_annotators_thread(self):
-        for annotator  in fnutils.get_all_annotators():
+        for annotator  in fnutils.get_all_annotators(notin_emails=['lome']):
             LoginPanel.dataQueue.put(annotator)
 
 if __name__ == '__main__':
