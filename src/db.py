@@ -166,6 +166,11 @@ class AnnotationProject(Base):
     visibility = Column(String)
 
 
+class ProjectAnnotator(Base):
+    __tablename__ = 'project_annotator'
+
+    project_id = Column(String, ForeignKey('annotation_project.id'), primary_key=True)
+    annotator_id = Column(String, ForeignKey('annotator.id'), primary_key=True)
     
 class Annotator(Base):
     __tablename__ = 'annotator'
@@ -177,12 +182,11 @@ class Annotator(Base):
     posted_at = Column(DateTime)
     
 
-class AnnotatorTask(Base):
-    __tablename__ = 'annotator_task'
+class TaskAnnotator(Base):
+    __tablename__ = 'task_annotator'
 
-    annotator_id = Column(String, ForeignKey('annotator.id'))
-    annotation_task_id = Column(String, ForeignKey('annotation_task.id'))
-    role = Column(String)
+    annotator_id = Column(String, ForeignKey('annotator.id'), primary_key=True)
+    annotation_task_id = Column(String, ForeignKey('annotation_task.id'), primary_key=True)
 
     
 Base.metadata.create_all(engine)
