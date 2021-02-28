@@ -260,13 +260,19 @@ def is_event(frame):
 def filter_inheritance(frame):
     return [rel for rel in frame.frameRelations if rel.type.name == 'Inheritance' and frame.name == rel.Child.name]
 
-def filter_core_fe(frame):
-    return [fe for fe in frame.FE.values() if fe.coreType == 'Core']
+def filter_core_fes(frame):
+    return filter_fes(frame, 'Core')
 
-def get_lome_arg_ann_fes(event_ann_id):
+def filter_peripheral_fes(frame):
+    return filter_fes(frame, 'Peripheral')
+
+def filter_fes(frame, filter_by = 'Core'):
+    return [fe for fe in frame.FE.values() if fe.coreType == filter_by]
+
+def get_args_ann_fes(event_ann_id, annotator_id):
     fes_ann = []
     with session_scope() as session:
-        args_ann = session.query(ArgANN).filter_by(event_ann_id=event_ann_id, annotator_id='lome').all()
+        args_ann = session.query(ArgANN).filter_by(event_ann_id=event_ann_id, annotator_id=annotator_id).all()
         event_ann = session.query(EventANN).filter_by(id=event_ann_id).first()
         
     args_fe_ids = [arg_ann.event_fe_id for arg_ann in args_ann]

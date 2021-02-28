@@ -3,7 +3,7 @@ from scrolledtext import ScrolledText
 from tkinter import *
 from tkinter import ttk
 import _thread, queue, time
-from db import EventANN,  ValEventANN
+from db import EventANN
 import fnutils
 
 
@@ -29,15 +29,15 @@ class FrameSelection(Frame):
         self.triggers_combo.config(values=[e.trigger for e in events])
 
 
-    def set_val_event(self, val_event):
-        print('set val event')
-        if val_event:
-            if val_event.is_wrong():
-                print('val wrong')
-                self.ans_type_event.set('Errado')
-            else:
-                print('val right')
-                self.ans_type_event.set('Certo')
+    # def set_val_event(self, val_event):
+    #     print('set val event')
+    #     if val_event:
+    #         if val_event.is_wrong():
+    #             print('val wrong')
+    #             self.ans_type_event.set('Errado')
+    #         else:
+    #             print('val right')
+    #             self.ans_type_event.set('Certo')
     
     def set_events_ann(self, events_ann):
         self.events_ann = events_ann
@@ -61,22 +61,21 @@ class FrameSelection(Frame):
         label.pack(side=TOP, anchor=W)
         label.config(textvariable=self.var_event_type)
 
-        row_val = Frame(self)
-        lab_type_qs = Label(row_val)
-        lab_type_qs.config(text='Tipo está: ')
-        lab_type_qs.pack(side=LEFT)
+        # row_val = Frame(self)
+        # lab_type_qs = Label(row_val)
+        # lab_type_qs.config(text='Tipo está: ')
+        # lab_type_qs.pack(side=LEFT)
 
-        self.ans_type_event = StringVar()
+        # self.ans_type_event = StringVar()
 
-        rad_type_wrong = Radiobutton(row_val, text='Errado', value='Errado', variable=self.ans_type_event, command=(lambda : self.on_press_type_radio_event('wrong')))
-        rad_type_wrong.pack(side=LEFT)
+        # rad_type_wrong = Radiobutton(row_val, text='Errado', value='Errado', variable=self.ans_type_event, command=(lambda : self.on_press_type_radio_event('wrong')))
+        # rad_type_wrong.pack(side=LEFT)
 
-        rad_type_right = Radiobutton(row_val, text='Certo',  value='Certo', variable=self.ans_type_event, command=(lambda : self.on_press_type_radio_event('right')))
-        rad_type_right.pack(side=LEFT)
+        # rad_type_right = Radiobutton(row_val, text='Certo',  value='Certo', variable=self.ans_type_event, command=(lambda : self.on_press_type_radio_event('right')))
+        # rad_type_right.pack(side=LEFT)
         
 
-        row_val.pack(side=TOP, expand=YES, fill=X)
-
+        # row_val.pack(side=TOP, expand=YES, fill=X)
         
             
 
@@ -130,10 +129,10 @@ class FrameSelection(Frame):
             self.events_ann.append(event_ann)
         return event_ann
 
-    def on_press_type_radio_event(self, ans):
-        print('type ans %s' % ans)
-        if self.event_val_handler:
-            self.event_val_handler(ValEventANN(status_type=ans))
+    # def on_press_type_radio_event(self, ans):
+    #     print('type ans %s' % ans)
+    #     if self.event_val_handler:
+    #         self.event_val_handler(ValEventANN(status_type=ans))
         
 
     def set_event_val_handler(self, func):

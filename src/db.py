@@ -8,7 +8,7 @@ from sqlalchemy import Column, Integer, String, DateTime
 
 import uuid
 
-engine = create_engine('sqlite:///lome_tbpt.db',  connect_args={'check_same_thread': False}, echo=True)
+engine = create_engine('sqlite:///lome_tbpt-anderson.db',  connect_args={'check_same_thread': False}, echo=True)
 Base = declarative_base()
 
 

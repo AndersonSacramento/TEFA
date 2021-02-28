@@ -44,14 +44,14 @@ class SentenceAnnotation(Frame):
         self.fe_selection = FESelection(options, parent=left_frame)
         self.fe_selection.pack(side=TOP, anchor=SW)
         left_frame.pack(side=LEFT, expand=YES, fill=BOTH)
-        self.fe_selection.set_arg_val_handler(self.arg_val_handler)
+        #self.fe_selection.set_arg_val_handler(self.arg_val_handler)
         
 
         right_frame = Frame(self)
         self.frame_selection = FrameSelection(options, parent=right_frame)
         self.frame_selection.pack(side=TOP, anchor=NE)
         self.frame_selection.set_event_ann_type_selection_handler(self.event_type_selection_handler)
-        self.frame_selection.set_event_val_handler(self.event_val_handler)
+        #self.frame_selection.set_event_val_handler(self.event_val_handler)
         
         btn_frame = Frame(right_frame)
 
@@ -77,7 +77,7 @@ class SentenceAnnotation(Frame):
         _thread.start_new_thread(self.load_sentence, (options['sentence_id'], options['annotator_id']))
         self.sentence = None
         self.update_sentence_text()
-        self.update_val_ann()
+        #self.update_val_ann()
         
 
     def load_sentence(self, sentence_id, annotator_id):
@@ -86,7 +86,7 @@ class SentenceAnnotation(Frame):
         if sentence:
             events = fnutils.query_events_sentence(sentence)
             # from lome annotator
-            events_ann = fnutils.query_events_ann('lome', [e.id for e in events])
+            events_ann = fnutils.query_events_ann(annotator_id, [e.id for e in events])
             if events_ann:
                 self.events_ann = events_ann
                 print('events ann recovered annotator_id: %s' % annotator_id)
@@ -95,11 +95,11 @@ class SentenceAnnotation(Frame):
             
 
     def save_annotation(self):
-        # for event_ann in self.events_ann:
-        #     event_ann.annotator_id = self.options['annotator_id']
-        #     for arg_ann in event_ann.args_ann:
-        #         arg_ann.annotator_id = self.options['annotator_id']
-        #     fnutils.save_event_ann(event_ann)
+        for event_ann in self.events_ann:
+            event_ann.annotator_id = self.options['annotator_id']
+            for arg_ann in event_ann.args_ann:
+                arg_ann.annotator_id = self.options['annotator_id']
+            fnutils.save_event_ann(event_ann)
 
         Frame.destroy(self.parent)
 
@@ -149,6 +149,7 @@ class SentenceAnnotation(Frame):
                                                      event_ann_id=self.cur_event_ann.id,
                                                               annotator_id=self.options['annotator_id']))
                     print('create arg_ann')
+                self._update_fes_selections(self.cur_event_ann)
                                                      
             
         sel_first_pos = SEL + '.first'
@@ -162,6 +163,7 @@ class SentenceAnnotation(Frame):
                 tag_name = '%s-%s' % (arg_ann.event_fe_id, self.cur_event_ann.id)
                 self.sentence_text_view.tag_remove(tag_name,'1.0', END)
                 self.sentence_text_view.tag_add(tag_name, '1.%s' % arg_ann.start_at, '1.%s' % arg_ann.end_at)
+                print('even_ann_id = %s event_fe_id %s' % (arg_ann.event_ann_id, arg_ann.event_fe_id))
                 fe_color = self.fe_selection.get_fe_color(arg_ann.event_fe_id)
                 self.sentence_text_view.tag_config(tag_name, background=fe_color)
 
@@ -195,13 +197,27 @@ class SentenceAnnotation(Frame):
         self.cur_event_ann = event_ann
         if event_ann and frame:
             print('Frame name: %s \n event_id: %s \n event_args %s' % (frame.name, event_ann.event_id, event_ann.args_ann))
-            self.fe_selection.set_args_ann(event_ann.args_ann)
-            self.fe_selection.set_fes(fnutils.get_lome_arg_ann_fes(event_ann.id))#fnutils.filter_core_fe(frame))
+            #self.fe_selection.set_args_ann(event_ann.args_ann)
+            self.fe_selection.update_selections()
+            self.fe_selection.set_args_ann_fes(fnutils.get_args_ann_fes(event_ann.id, self.options['annotator_id']))
+            self.fe_selection.set_core_fes(fnutils.filter_core_fes(frame))
+            self.fe_selection.set_peripheral_fes(fnutils.filter_peripheral_fes(frame))
             _thread.start_new_thread(self.load_val_ann, (self.options['annotator_id'], event_ann.id)) 
         else:
-            self.fe_selection.clear_args_rows()
+            self.fe_selection.clear_args_fes_rows()
+            self.fe_selection.clear_core_fes_rows()
+            self.fe_selection.clear_peripheral_fes_rows()
         self.load_event_ann_tags()
             
+
+    def _update_fes_selections(self, event_ann):
+        frame = fnutils.frame_by_id(event_ann.event_fn_id)
+        if event_ann and frame:
+            self.fe_selection.update_selections()
+            self.fe_selection.set_args_ann_fes(fnutils.get_args_ann_fes(event_ann.id, self.options['annotator_id']))
+            self.fe_selection.set_core_fes(fnutils.filter_core_fes(frame))
+            self.fe_selection.set_peripheral_fes(fnutils.filter_peripheral_fes(frame))
+
         
     def update_sentence_text(self):
         try:
