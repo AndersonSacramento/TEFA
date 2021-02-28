@@ -71,9 +71,10 @@ def create_partition(dbpath, config, common_percent=10):
     persist_all_sentences_from(common_events, common_session)
     persist_all_events_from(common_events, common_session)
     persist_all_lemma_fn(common_session)
-    persist_annotator(Annotator(email='common@mail'), common_session)
-    persist_all_events_ann_from(common_events, common_session)
-    persist_all_args_ann_from(common_events, common_session)
+    annotator = Annotator(email='common@mail')
+    persist_annotator(annotator, common_session)
+    persist_all_events_ann_from(common_events, annotator, common_session)
+    persist_all_args_ann_from(common_events, annotator, common_session)
 
     common_session.commit()
     common_session.close()
@@ -98,9 +99,10 @@ def create_partition(dbpath, config, common_percent=10):
         persist_all_sentences_from(cur_events, cur_session)
         persist_all_events_from(cur_events, cur_session)
         persist_all_lemma_fn(cur_session)
-        persist_annotator(Annotator(email=email), cur_session)
-        persist_all_events_ann_from(cur_events, cur_session)
-        persist_all_args_ann_from(cur_events, cur_session)
+        annotator = Annotator(email=email)
+        persist_annotator(annotator, cur_session)
+        persist_all_events_ann_from(cur_events, annotator, cur_session)
+        persist_all_args_ann_from(cur_events, annotator, cur_session)
 
         cur_session.commit()
         cur_session.close()        
@@ -173,12 +175,16 @@ def persist_annotator(annotator, session):
                                       status='todo'))
     session.commit()
 
-def persist_all_events_ann_from(events, session):
+def persist_all_events_ann_from(events, annotator, session):
     for event_ann in query_all_events_ann_from(events):
-        session.add(event_ann.copy())
+        event_ann = event_ann.copy()
+        event_ann.annotator_id = annotator.email
+        session.add(event_ann)
     session.commit()
 
-def persist_all_args_ann_from(events, session):
+def persist_all_args_ann_from(events, annotator, session):
     for arg_ann in query_all_events_args_ann_from(events):
-        session.add(arg_ann.copy())
+        arg_ann = arg_ann.copy()
+        arg_ann.annotator_id = annotator.email
+        session.add(arg_ann)
     session.commit()
