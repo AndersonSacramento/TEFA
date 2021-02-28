@@ -24,6 +24,13 @@ class LemmaFN(Base):
     def __repr__(self):
         return '<LemmaFN (lexunitid=%s, lemma=%s, pos=%s)>' % (self.lexunitid, self.lemma, self.pos)
 
+    def copy(self):
+        return LemmaFN(lexunitid=self.lexunitid,
+                       lemma=self.lemma,
+                       pos=self.pos,
+                       frameid=self.frameid,
+                       lang=self.lang)
+
 
 class EventFN(Base):
     __tablename__ = 'event_fn'
@@ -55,6 +62,12 @@ class Sentence(Base):
     events = relationship('EventTBPT', back_populates='sentence')
     timexps = relationship('TimeExpTBPT', back_populates='sentence')
 
+    def copy(self):
+        return Sentence(id=self.id,
+                        text=self.text,
+                        document_name=self.document_name,
+                        position=self.position)
+
 class EventTBPT(Base):
     __tablename__ = 'event_tbpt'
 
@@ -68,6 +81,17 @@ class EventTBPT(Base):
 
     sentence_id = Column(String, ForeignKey('sentence.id'))
     sentence = relationship('Sentence', back_populates='events')
+
+    def copy(self):
+        return EventTBPT(id=self.id,
+                         eid=self.eid,
+                         trigger=self.trigger,
+                         lemma=self.lemma,
+                         pos=self.pos,
+                         start_at=self.start_at,
+                         end_at=self.end_at,
+                         sentence_id=self.sentence_id)
+
     
 class TimeExpTBPT(Base):
     __tablename__ = 'time_exp_tbpt'
@@ -94,6 +118,16 @@ class EventANN(Base):
 
     annotator = relationship('Annotator', back_populates='events_ann')
     args_ann = relationship('ArgANN', back_populates='event_ann', lazy='subquery')
+
+    def copy(self):
+        return EventANN(id=self.id,
+                        event_fn_id=self.event_fn_id,
+                        event_id=self.event_id,
+                        created_at=self.created_at,
+                        posted_at=self.posted_at,
+                        updated_at=self.updated_at,
+                        annotator_id=self.annotator_id)
+                        
     
 
 class ArgANN(Base):
@@ -111,6 +145,15 @@ class ArgANN(Base):
     event_ann = relationship('EventANN', back_populates='args_ann')
 
 
+    def copy(self):
+        return ArgANN(start_at=self.start_at,
+                      end_at=self.end_at,
+                      created_at=self.created_at,
+                      posted_at=self.posted_at,
+                      event_fe_id=self.event_fe_id,
+                      event_ann_id=self.event_ann_id,
+                      annotator_id=self.annotator_id)
+    
 class Annotator(Base):
     __tablename__ = 'annotator'
 
@@ -120,7 +163,12 @@ class Annotator(Base):
     
     events_ann = relationship('EventANN', back_populates='annotator')
     args_ann = relationship('ArgANN', back_populates='annotator')
-            
+
+    def copy(self):
+        return Annotator(email=self.email,
+                         created_at=self.created_at,
+                         posted_at=self.posted_at)
+    
 class SentenceAnnotator(Base):
     __tablename__ = 'sentence_annotator'
 
@@ -131,6 +179,11 @@ class SentenceAnnotator(Base):
     def __repr__(self):
         return '<SentenceAnnotator(status=%s, annotator_id=%s, sentence_id=%s)' % (self.status, self.annotator_id, self.sentence_id)
 
+
+    def copy(self):
+        return SentenceAnnotator(status=self.status,
+                                 annotator_id=self.annotator_id,
+                                 sentence_id=self.sentence_id)
 
 
 class ValEventANN(Base):
