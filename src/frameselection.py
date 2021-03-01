@@ -45,6 +45,10 @@ class FrameSelection(Frame):
 
     def set_event_ann_type_selection_handler(self, func):
         self.event_ann_type_selection_handler = func
+
+    def set_event_ann_type_remove_handler(self, func):
+        self.event_ann_type_remove_handler = func
+
         
     def make_widgets(self, options):
         #vlist = options['triggers']
@@ -56,29 +60,21 @@ class FrameSelection(Frame):
         #self.triggers_combo.current(0)
         self.triggers_combo.bind("<<ComboboxSelected>>", self.trigger_change_handler)
 
+        row_type = Frame(self)
+        
         self.var_event_type = StringVar()
         self.var_event_type.set('Tipo:')
-        label = Label(self)
-        label.pack(side=TOP, anchor=W)
+        label = Label(row_type, font=('times', 18))
+        label.pack(side=LEFT)
         label.config(textvariable=self.var_event_type)
 
-        # row_val = Frame(self)
-        # lab_type_qs = Label(row_val)
-        # lab_type_qs.config(text='Tipo está: ')
-        # lab_type_qs.pack(side=LEFT)
 
-        # self.ans_type_event = StringVar()
+        self.igm = PhotoImage(file="../imgs/remove_icon.gif")
+        self.btn_remove_type = Button(row_type, image=self.igm, command=self.remove_event_type_handler)
+        self.btn_remove_type.pack_forget()
 
-        # rad_type_wrong = Radiobutton(row_val, text='Errado', value='Errado', variable=self.ans_type_event, command=(lambda : self.on_press_type_radio_event('wrong')))
-        # rad_type_wrong.pack(side=LEFT)
-
-        # rad_type_right = Radiobutton(row_val, text='Certo',  value='Certo', variable=self.ans_type_event, command=(lambda : self.on_press_type_radio_event('right')))
-        # rad_type_right.pack(side=LEFT)
+        row_type.pack(side=TOP, expand=YES, fill=X)
         
-
-        # row_val.pack(side=TOP, expand=YES, fill=X)
-        
-            
 
         print('Options here %s' % options)
         self.suggestion_scroll = ScrolledList(options['suggestion'], parent=self)
@@ -130,6 +126,18 @@ class FrameSelection(Frame):
             self.events_ann.append(event_ann)
         return event_ann
 
+
+    def remove_event_type_handler(self):
+        event_pos = self.triggers_combo.current()
+        event = self._event_by_position(event_pos)
+        if self.events_ann:
+            event_ann = fnutils.find_event_ann(self.events_ann, event.id)
+            self.events_ann.remove(event_ann)
+            fnutils.delete_previous(event_ann, event_ann.args_ann)
+            self.var_event_type.set('Tipo:')
+            self.btn_remove_type.pack_forget()
+        if self.event_ann_type_remove_handler:
+            self.event_ann_type_remove_handler(event_ann)
     # def on_press_type_radio_event(self, ans):
     #     print('type ans %s' % ans)
     #     if self.event_val_handler:
@@ -148,6 +156,7 @@ class FrameSelection(Frame):
             frame = self.suggestions_frames[i]
             self.selected_frames[frame.ID] = frame
             event_ann = self.create_or_update_event_ann(event.id, frame.ID)
+            self.btn_remove_type.pack(side=RIGHT)
             if self.event_ann_type_selection_handler:
                 self.event_ann_type_selection_handler(event_ann, frame)
         
@@ -160,6 +169,7 @@ class FrameSelection(Frame):
             frame = self.all_frames[i]
             self.selected_frames[frame.ID] = frame
             event_ann = self.create_or_update_event_ann(event.id, frame.ID)
+            self.btn_remove_type.pack(side=RIGHT)
             if self.event_ann_type_selection_handler:
                 self.event_ann_type_selection_handler(event_ann, frame)
 
@@ -197,14 +207,17 @@ class FrameSelection(Frame):
                 frame = self.selected_frames.get(event_ann.event_fn_id) or fnutils.frame_by_id(event_ann.event_fn_id)
                 if frame:
                     self.var_event_type.set('Tipo: %s' % frame.name)
+                    self.btn_remove_type.pack(side=RIGHT)
                     if self.event_ann_type_selection_handler:
                         self.event_ann_type_selection_handler(event_ann, frame)
             else:
                 self.var_event_type.set('Tipo:')
+                self.btn_remove_type.pack_forget()
                 if self.event_ann_type_selection_handler:
                     self.event_ann_type_selection_handler(None, None)
         else:
             self.var_event_type.set('Tipo:')
+            self.btn_remove_type.pack_forget()
             if self.event_ann_type_selection_handler:
                 self.event_ann_type_selection_handler(None, None)
             

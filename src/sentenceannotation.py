@@ -51,6 +51,7 @@ class SentenceAnnotation(Frame):
         self.frame_selection = FrameSelection(options, parent=right_frame)
         self.frame_selection.pack(side=TOP, anchor=NE)
         self.frame_selection.set_event_ann_type_selection_handler(self.event_type_selection_handler)
+        self.frame_selection.set_event_ann_type_remove_handler(self.event_ann_type_remove_handler)
         #self.frame_selection.set_event_val_handler(self.event_val_handler)
         
         btn_frame = Frame(right_frame)
@@ -202,12 +203,20 @@ class SentenceAnnotation(Frame):
             self.fe_selection.set_args_ann_fes(fnutils.get_fes_from_args(event_ann, event_ann.args_ann))#get_args_ann_fes(event_ann.id, self.options['annotator_id']))
             self.fe_selection.set_core_fes(fnutils.filter_core_fes(frame))
             self.fe_selection.set_peripheral_fes(fnutils.filter_peripheral_fes(frame))
-            _thread.start_new_thread(self.load_val_ann, (self.options['annotator_id'], event_ann.id)) 
+            #_thread.start_new_thread(self.load_val_ann, (self.options['annotator_id'], event_ann.id)) 
         else:
             self.fe_selection.update_fes()
         self.load_event_ann_tags()
-            
 
+    def event_ann_type_remove_handler(self, event_ann):
+        self.fe_selection.update_fes()
+        if self.cur_event_ann:
+            for arg_ann in self.cur_event_ann.args_ann:
+                tag_name = '%s-%s' % (arg_ann.event_fe_id, self.cur_event_ann.id)
+                self.sentence_text_view.tag_delete(tag_name,'1.0', END)
+                print('delete tag')
+        self.cur_event_ann = None
+        
     def _update_fes_selections(self, event_ann):
         frame = fnutils.frame_by_id(event_ann.event_fn_id)
         if event_ann and frame:
