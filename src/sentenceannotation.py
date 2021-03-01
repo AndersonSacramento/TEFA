@@ -43,6 +43,7 @@ class SentenceAnnotation(Frame):
 
         self.fe_selection = FESelection(options, parent=left_frame)
         self.fe_selection.pack(side=TOP, anchor=SW)
+        self.fe_selection.set_arg_ann_remove_handler(self.arg_ann_remove_handler)
         left_frame.pack(side=LEFT, expand=YES, fill=BOTH)
         #self.fe_selection.set_arg_val_handler(self.arg_val_handler)
         
@@ -54,17 +55,18 @@ class SentenceAnnotation(Frame):
         self.frame_selection.set_event_ann_type_remove_handler(self.event_ann_type_remove_handler)
         #self.frame_selection.set_event_val_handler(self.event_val_handler)
         
-        btn_frame = Frame(right_frame)
 
-        btn_tag = Button(btn_frame, text='Anotar', command=self.annotate_arg)
-        btn_tag.pack(side=LEFT)
+        # btn_frame = Frame(right_frame)
+
+        # btn_tag = Button(btn_frame, text='Anotar', command=self.annotate_arg)
+        # btn_tag.pack(side=LEFT)
         
-        btn_save = Button(btn_frame, text='Salvar', command=self.save_annotation)
-        btn_save.pack(side=RIGHT, anchor=SE)
+        # btn_save = Button(btn_frame, text='Salvar', command=self.save_annotation)
+        # btn_save.pack(side=RIGHT, anchor=SE)
 
-        btn_preview = Button(btn_frame, text='Pré-visualizar', command=self.preview_annotation)
-        btn_preview.pack(side=LEFT, anchor=SE)
-        btn_frame.pack(side=TOP)
+        # btn_preview = Button(btn_frame, text='Pré-visualizar', command=self.preview_annotation)
+        # btn_preview.pack(side=LEFT, anchor=SE)
+        # btn_frame.pack(side=TOP)
         right_frame.pack(side=RIGHT, expand=YES, fill=BOTH)
 
 
@@ -96,11 +98,11 @@ class SentenceAnnotation(Frame):
             
 
     def save_annotation(self):
-        for event_ann in self.events_ann:
-            event_ann.annotator_id = self.options['annotator_id']
-            for arg_ann in event_ann.args_ann:
-                arg_ann.annotator_id = self.options['annotator_id']
-            fnutils.save_event_ann(event_ann)
+        # for event_ann in self.events_ann:
+        #     event_ann.annotator_id = self.options['annotator_id']
+        #     for arg_ann in event_ann.args_ann:
+        #         arg_ann.annotator_id = self.options['annotator_id']
+        #     fnutils.save_event_ann(event_ann)
 
         Frame.destroy(self.parent)
 
@@ -138,17 +140,23 @@ class SentenceAnnotation(Frame):
                 if arg_ann:
                     tag_name = '%s-%s-%s:%s' % (fe.ID, self.cur_event_ann.id, arg_ann.start_at, arg_ann.end_at)
                     self.sentence_text_view.tag_remove(tag_name,'1.0', END)
+                    previous_arg = arg_ann.copy()
                     arg_ann.start_at =  int(start_at)
                     arg_ann.end_at = int(end_at)
                     arg_ann.updated_at = fnutils.now()
+                    fnutils.save_arg_ann(arg_ann)
+                    fnutils.delete_arg_ann(previous_arg)
+
                     print('update arg_ann start_at %s end_at %s' % (arg_ann.start_at, arg_ann.end_at))
                 else:
-                    self.cur_event_ann.args_ann.append(ArgANN(start_at=start_at,
-                                                     end_at=end_at,
-                                                     created_at=fnutils.now(),
-                                                     event_fe_id=fe.ID,
-                                                     event_ann_id=self.cur_event_ann.id,
-                                                              annotator_id=self.options['annotator_id']))
+                    arg_ann = ArgANN(start_at=int(start_at),
+                                     end_at=int(end_at),
+                                     created_at=fnutils.now(),
+                                     event_fe_id=fe.ID,
+                                     event_ann_id=self.cur_event_ann.id,
+                                     annotator_id=self.options['annotator_id'])
+                    fnutils.save_arg_ann(arg_ann)
+                    self.cur_event_ann.args_ann.append(arg_ann)
                     print('create arg_ann')
                 tag_name = '%s-%s-%s:%s' % (fe.ID, self.cur_event_ann.id, start_at, end_at)
                 self.sentence_text_view.tag_remove(tag_name,'1.0', END)
@@ -212,6 +220,15 @@ class SentenceAnnotation(Frame):
         else:
             self.fe_selection.update_fes()
         self.load_event_ann_tags()
+        _thread.start_new_thread(self.save_events_ann, ())
+
+
+    def save_events_ann(self):
+        for event_ann in self.events_ann:
+            event_ann.annotator_id = self.options['annotator_id']
+            for arg_ann in event_ann.args_ann:
+                arg_ann.annotator_id = self.options['annotator_id']
+            fnutils.save_event_ann(event_ann)
 
     def event_ann_type_remove_handler(self, event_ann):
         self.fe_selection.update_fes()
@@ -221,6 +238,14 @@ class SentenceAnnotation(Frame):
                 self.sentence_text_view.tag_delete(tag_name,'1.0', END)
                 print('delete tag')
         self.cur_event_ann = None
+
+    def arg_ann_remove_handler(self, arg_ann):
+        if self.cur_event_ann:
+            tag_name = '%s-%s-%s:%s' % (arg_ann.event_fe_id, self.cur_event_ann.id, arg_ann.start_at, arg_ann.end_at)
+            self.sentence_text_view.tag_delete(tag_name,'1.0', END)
+            self.cur_event_ann.args_ann.remove(arg_ann)
+            fnutils.delete_arg_ann(arg_ann)
+            self._update_fes_selections(self.cur_event_ann)
         
     def _update_fes_selections(self, event_ann):
         frame = fnutils.frame_by_id(event_ann.event_fn_id)

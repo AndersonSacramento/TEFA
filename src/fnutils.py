@@ -43,7 +43,12 @@ def create_annotator(email):
     return annotator
 
 
+def delete_arg_ann(arg_ann):
+    with session_scope() as session:
+        session.query(ArgANN).filter(ArgANN.event_fe_id==arg_ann.event_fe_id, ArgANN.event_ann_id==arg_ann.event_ann_id, ArgANN.annotator_id==arg_ann.annotator_id, ArgANN.start_at==arg_ann.start_at, ArgANN.end_at==arg_ann.end_at).\
+            delete(synchronize_session='fetch')
 
+        
 def delete_previous(event_ann, args_ann):
     with session_scope() as session:
         session.query(EventANN).filter(EventANN.event_id==event_ann.event_id, EventANN.annotator_id==event_ann.annotator_id).\
@@ -112,7 +117,10 @@ def save_event_ann(event_ann):
     with session_scope() as session:
         session.add(event_ann)
 
-
+def save_arg_ann(arg_ann):
+    with session_scope() as session:
+        session.add(arg_ann)
+        
 def save_args_ann(args_ann):
     with session_scope() as session:
         for arg_ann in args_ann:

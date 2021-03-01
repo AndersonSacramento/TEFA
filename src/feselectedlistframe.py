@@ -70,6 +70,7 @@ class FESelectedListFrame(Frame):
         #fes_colors = [fe_color.color for fe_color in self.fes.values()]
 
         args_fe_count = {fe_id:len([arg_ann for arg_ann in self.args_ann if arg_ann.event_fe_id == fe_id]) for fe_id in self.fes }
+        self.imgs = []
         next_row_px_add = 0
         for i, fe_color in enumerate(self.fes.values()):
             row = Frame(self)
@@ -82,10 +83,19 @@ class FESelectedListFrame(Frame):
             row_arg.config(width=140)
             for arg_ann in [arg_ann for arg_ann in self.args_ann if arg_ann.event_fe_id == fe_color.fe.ID]:
                 arg_text = self.sentence_text[arg_ann.start_at:arg_ann.end_at]
-                msg_arg = Message(row_arg,text=arg_text)
+                row_text = Frame(row_arg)
+                msg_arg = Message(row_text,text=arg_text)
                 msg_arg.config(font=('times', 12))
-                msg_arg.config(width=300)
-                msg_arg.pack(side=TOP, fill=X, expand=YES, anchor=NW)
+                msg_arg.config(width=250)
+                msg_arg.pack(side=LEFT, expand=YES, anchor=NW)
+
+                img = PhotoImage(file="../imgs/remove_icon_18.gif")
+                self.imgs.append(img)
+                btn_remove_arg = Button(row_text, image=img, command=lambda arg_ann=arg_ann: self.remove_event_arg_handler(arg_ann))
+                btn_remove_arg.pack(side=RIGHT)
+
+                row_text.pack(side=TOP, expand=YES, fill=X,  anchor=NW)
+                
                 print('make message: %s \n%d' % (arg_text, j))
                 j += 1
             row_arg.pack(side=TOP, expand=YES, fill=X,  anchor=NW)
@@ -145,6 +155,12 @@ class FESelectedListFrame(Frame):
         self.create_fes_radios_list()
 
 
+    def remove_event_arg_handler(self, arg_ann):
+        if self.arg_ann_remove_handler:
+            self.arg_ann_remove_handler(arg_ann)
+
+    def set_arg_ann_remove_handler(self, func):
+        self.arg_ann_remove_handler = func
         
     def load_args_text(self):
         args_text = []

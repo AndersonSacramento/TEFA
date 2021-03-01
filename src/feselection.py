@@ -37,6 +37,10 @@ class FESelection(Frame):
 
 
 
+
+    def set_arg_ann_remove_handler(self, func):
+        self.fes_selection_list.set_arg_ann_remove_handler(func)
+        
     def set_sentence_text(self, text):
         self.fes_selection_list.set_sentence_text(text)
 
