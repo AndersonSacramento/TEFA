@@ -302,6 +302,10 @@ def get_lemma_from_lexunit_name(lexunit_name, lang='por'):
         return {name for lemma in wn.synsets(name, pos) for name in lemma.lemma_names(lang=lang)}
     except KeyError:
         return {}
+
+
+def get_all_frame_sentences(frame):
+    return fn.exemplars(frame=frame)
     
 def all_event_frames():
     lframes = []
