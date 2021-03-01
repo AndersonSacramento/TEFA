@@ -21,7 +21,7 @@ class FESelection(Frame):
     def __init__(self, options, parent=None):
         Frame.__init__(self, parent)
         self.pack(expand=YES, fill=BOTH)
-        self.fes_colors =  ['#85E314', '#33E4CF', '#F14EAA', '#F1D54A', '#E67D57', '#F3BCBC', '#B18904', '#2E9AFE', '#FA5858', '#A4A4A4', '#81F781', '#B18907', '#2E9AFD', '#FA5851', '#A18904', '#CE9AFE', '#DA5858', '#B1A907', '#2EAAFD', '#FAA851', '#A1A904', '#CEAAFE', '#DAA858', '#B1AB07', '#2EABFD', '#FAAB51', '#A1AB04', '#CEABFE', '#DAAB58']
+        self.colors =  ['#85E314', '#33E4CF', '#F14EAA', '#F1D54A', '#E67D57', '#F3BCBC', '#B18904', '#2E9AFE', '#FA5858', '#A4A4A4', '#81F781', '#B18907', '#2E9AFD', '#FA5851', '#A18904', '#CE9AFE', '#DA5858', '#B1A907', '#2EAAFD', '#FAA851', '#A1A904', '#CEAAFE', '#DAA858', '#B1AB07', '#2EABFD', '#FAAB51', '#A1AB04', '#CEABFE', '#DAAB58']
         self.color_count = 0
         self.fes = {}
         self.args_ann = []
@@ -30,6 +30,7 @@ class FESelection(Frame):
         options['peripheral_fes'] = {'title': 'Elementos peripheral', 'fes_colors':['#B18907', '#2E9AFD', '#FA5851', '#A18904', '#CE9AFE', '#DA5858']}
         options['selected_fes'] = {'title': 'Elementos anotados', 'fes_colors':['#B1AB07', '#2EABFD', '#FAAB51', '#A1AB04', '#CEABFE', '#DAAB58']}
         self.options = options
+        self.fes_colors = {}
         self.make_widgets()
         self.queue_args_text = queue.Queue()
 
@@ -44,13 +45,21 @@ class FESelection(Frame):
     
     def on_fe_selection(self, selection_frame):
         self.selection_frame = selection_frame
-    
+
+    def _get_fe_color(self, fe):
+        if fe.ID in self.fes_colors:
+            return self.fes_colors.get(fe.ID)
+        else:
+            self.fes_colors[fe.ID] = FEColor(fe, self.colors[self.color_count])
+            self.color_count += 1
+            return self.fes_colors[fe.ID]
+        
+        
     def _set_fes(self, fes, fes_dict):
         for fe in fes:
             if fe.ID not in self.fes:
-                fes_dict[fe.ID] = FEColor(fe, self.fes_colors[self.color_count])
+                fes_dict[fe.ID] = self._get_fe_color(fe)
                 self.fes[fe.ID] = fes_dict[fe.ID]
-                self.color_count += 1
                 
     def set_core_fes(self, fes):
         core_fes = {}
@@ -97,24 +106,27 @@ class FESelection(Frame):
 
     def _reset_fes_color(self):
         self.color_count = 0
-        self.fes = {}
+        self.fes_colors = {}
 
+    def update_fes(self):
+        self.update_selections()
+        self._reset_fes_color()
+        
+        
     def update_selections(self):
         self.clear_args_fes_rows()
         self.clear_core_fes_rows()
         self.clear_peripheral_fes_rows()
+        self.fes = {}
         
     def clear_args_fes_rows(self):
         self.fes_selection_list.clear_fes_rows()
-        self._reset_fes_color()
 
     def clear_core_fes_rows(self):
         self.core_selection_list.clear_fes_rows()
-        self._reset_fes_color()
         
     def clear_peripheral_fes_rows(self):
         self.peripheral_selection_list.clear_fes_rows()
-        self._reset_fes_color()
     
 if __name__ == '__main__':
     options = {'fes_colors': ['#85E314', '#33E4CF', '#F14EAA', '#F1D54A', '#E67D57', '#F3BCBC'],

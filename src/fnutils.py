@@ -282,6 +282,14 @@ def get_args_ann_fes(event_ann_id, annotator_id):
     return fes_ann
     
 
+def get_fes_from_args(event_ann, args_ann):
+    fes_ann = []
+    args_fe_ids = [arg_ann.event_fe_id for arg_ann in args_ann]
+    for fe in fn.frame(event_ann.event_fn_id).FE.values():
+        if fe.ID in args_fe_ids:
+            fes_ann.append(fe)
+    return fes_ann
+
 def fn_to_wn_pos(notation):
     return {'n': wn.NOUN,
             'v': wn.VERB,

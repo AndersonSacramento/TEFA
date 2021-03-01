@@ -198,23 +198,23 @@ class SentenceAnnotation(Frame):
         if event_ann and frame:
             print('Frame name: %s \n event_id: %s \n event_args %s' % (frame.name, event_ann.event_id, event_ann.args_ann))
             #self.fe_selection.set_args_ann(event_ann.args_ann)
-            self.fe_selection.update_selections()
-            self.fe_selection.set_args_ann_fes(fnutils.get_args_ann_fes(event_ann.id, self.options['annotator_id']))
+            self.fe_selection.update_fes()
+            self.fe_selection.set_args_ann_fes(fnutils.get_fes_from_args(event_ann, event_ann.args_ann))#get_args_ann_fes(event_ann.id, self.options['annotator_id']))
             self.fe_selection.set_core_fes(fnutils.filter_core_fes(frame))
             self.fe_selection.set_peripheral_fes(fnutils.filter_peripheral_fes(frame))
             _thread.start_new_thread(self.load_val_ann, (self.options['annotator_id'], event_ann.id)) 
         else:
-            self.fe_selection.clear_args_fes_rows()
-            self.fe_selection.clear_core_fes_rows()
-            self.fe_selection.clear_peripheral_fes_rows()
+            self.fe_selection.update_fes()
         self.load_event_ann_tags()
             
 
     def _update_fes_selections(self, event_ann):
         frame = fnutils.frame_by_id(event_ann.event_fn_id)
         if event_ann and frame:
+            print('update_fes_selection frame id: %s' % frame.ID)
             self.fe_selection.update_selections()
-            self.fe_selection.set_args_ann_fes(fnutils.get_args_ann_fes(event_ann.id, self.options['annotator_id']))
+            
+            self.fe_selection.set_args_ann_fes(fnutils.get_fes_from_args(event_ann, event_ann.args_ann))
             self.fe_selection.set_core_fes(fnutils.filter_core_fes(frame))
             self.fe_selection.set_peripheral_fes(fnutils.filter_peripheral_fes(frame))
 
