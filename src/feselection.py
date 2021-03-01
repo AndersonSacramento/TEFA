@@ -26,13 +26,22 @@ class FESelection(Frame):
         self.fes = {}
         self.args_ann = []
         self.arg_val_handler = None
-        options['core_fes'] = {'title': 'Elementos Core', 'fes_colors':['#85E314', '#33E4CF', '#F14EAA', '#F1D54A', '#E67D57', '#F3BCBC', '#B18904', '#2E9AFE', '#FA5858', '#A4A4A4', '#81F781'] }
-        options['peripheral_fes'] = {'title': 'Elementos peripheral', 'fes_colors':['#B18907', '#2E9AFD', '#FA5851', '#A18904', '#CE9AFE', '#DA5858']}
-        options['selected_fes'] = {'title': 'Elementos anotados', 'fes_colors':['#B1AB07', '#2EABFD', '#FAAB51', '#A1AB04', '#CEABFE', '#DAAB58']}
+        options['core_fes'] = {'title': 'Elementos Core' }
+        options['peripheral_fes'] = {'title': 'Elementos peripheral'}
+        options['selected_fes'] = {'title': 'Elementos anotados'}
         self.options = options
         self.fes_colors = {}
+        self.selection_frame = None
         self.make_widgets()
         self.queue_args_text = queue.Queue()
+
+
+
+    def set_sentence_text(self, text):
+        self.fes_selection_list.set_sentence_text(text)
+
+    def set_args_ann(self, args_ann):
+        self.fes_selection_list.set_args_ann(args_ann)
 
 
     def get_fe_color(self, fe_id):
@@ -46,6 +55,9 @@ class FESelection(Frame):
     def on_fe_selection(self, selection_frame):
         self.selection_frame = selection_frame
 
+    def is_selected(self):
+        return self.selection_frame is not None
+    
     def _get_fe_color(self, fe):
         if fe.ID in self.fes_colors:
             return self.fes_colors.get(fe.ID)
@@ -71,12 +83,12 @@ class FESelection(Frame):
         self._set_fes(fes, peripheral_fes)
         self.peripheral_selection_list.set_fes(peripheral_fes)
 
-    def set_args_ann_fes(self, fes):
+    def set_args_ann_fes(self, fes, args_ann, sentence_text):
         print('fes args ids %s' % [fe.ID for fe in fes])
         args_fes = {}
         self._set_fes(fes, args_fes)
         print('args_fes %s' % args_fes)
-        self.fes_selection_list.set_fes(args_fes)
+        self.fes_selection_list.set_args_fes(args_fes, args_ann, sentence_text)
         print('selection args_fes %s' % self.fes_selection_list.fes)
 
     

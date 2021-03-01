@@ -10,11 +10,22 @@ class FESelectedListFrame(Frame):
         self.pack(expand=YES, fill=BOTH)
         self.options = options
         self.fes = {}
-        self.fes_colors = options['fes_colors']
         self.make_widgets()
+
+
+    def set_args_ann(self, args_ann):
+        self.args_ann = args_ann
+
+    def set_sentence_text(self, text):
+        self.sentence_text = text
 
     def set_fes(self, fes):
         self.fes = fes
+        
+    def set_args_fes(self, fes, args_ann, sentence_text):
+        self.set_fes(fes)
+        self.set_args_ann(args_ann)
+        self.set_sentence_text(sentence_text)
         self.create_fes_radios_list()
 
     def get_fes(self):
@@ -51,19 +62,37 @@ class FESelectedListFrame(Frame):
 
         if self.fes:
             #self.var_fes.set(self.fes_names[0])
-            self.canv.config(scrollregion=(0, 0, 150, 30+len(list(self.fes.values()))*30))
+            
+            self.canv.config(scrollregion=(0, 0, 150, 30+(len(list(self.fes.values())) + len(self.args_ann))*80))
 
         self.fes_selection_vars = []
 
         #fes_colors = [fe_color.color for fe_color in self.fes.values()]
+
+        args_fe_count = {fe_id:len([arg_ann for arg_ann in self.args_ann if arg_ann.event_fe_id == fe_id]) for fe_id in self.fes }
+        next_row_px_add = 0
         for i, fe_color in enumerate(self.fes.values()):
             row = Frame(self)
             row_type = Frame(row)
             rad_type = Radiobutton(row_type, text=fe_color.fe.name, value=fe_color.fe.name, variable=self.var_fes, command=self.on_press_radio_arg, bg=fe_color.color)
-            rad_type.pack(side=TOP)
-            row_type.pack(side=TOP, expand=YES, fill=X)
-            
-            self.rows_ids.append(self.canv.create_window(10,30+(i*30), anchor=W, window=row))
+            rad_type.pack(side=TOP, anchor=NW)
+            row_type.pack(side=TOP, expand=YES, fill=X,  anchor=NW)
+            j = 0
+            row_arg = Frame(row)
+            row_arg.config(width=140)
+            for arg_ann in [arg_ann for arg_ann in self.args_ann if arg_ann.event_fe_id == fe_color.fe.ID]:
+                arg_text = self.sentence_text[arg_ann.start_at:arg_ann.end_at]
+                msg_arg = Message(row_arg,text=arg_text)
+                msg_arg.config(font=('times', 12))
+                msg_arg.config(width=300)
+                msg_arg.pack(side=TOP, fill=X, expand=YES, anchor=NW)
+                print('make message: %s \n%d' % (arg_text, j))
+                j += 1
+            row_arg.pack(side=TOP, expand=YES, fill=X,  anchor=NW)
+            row.config(width=300)
+            row.pack(expand=YES, fill=X)
+            self.rows_ids.append(self.canv.create_window(10,((i+1) * 100) + (args_fe_count[fe_color.fe.ID]-1)*50 +next_row_px_add, anchor=W, window=row, width=300))
+            next_row_px_add = (args_fe_count[fe_color.fe.ID]-1)*50
 
 
 

@@ -107,9 +107,10 @@ class SentenceAnnotation(Frame):
     def preview_annotation(self):
         pass
 
-    def _find_arg_ann(self, args_ann, fe_id):
+    def _find_arg_ann(self, args_ann, fe_id, start_at, end_at):
         for arg_ann in args_ann:
-            if arg_ann.event_fe_id == fe_id:
+            if arg_ann.event_fe_id == fe_id and ((arg_ann.start_at <= start_at < end_at <= arg_ann.end_at) or (start_at <= arg_ann.start_at < arg_ann.end_at <= end_at)):
+
                 return arg_ann
             
 
@@ -125,23 +126,22 @@ class SentenceAnnotation(Frame):
         
     def annotate_arg(self):
         text = self.sentence_text_view.get(SEL_FIRST, SEL_LAST)
-        if text:
+        if text and self.fe_selection.is_selected():
             start_at = self.sentence_text_view.index(SEL_FIRST).split('.')[1]
             end_at = self.sentence_text_view.index(SEL_LAST).split('.')[1]
             output = self.fe_selection.get_radio_fe_and_color()
             if output:
                 fe, fe_color = output
             if self.cur_event_ann:
-                tag_name = '%s-%s' % (fe.ID, self.cur_event_ann.id)
-                self.sentence_text_view.tag_remove(tag_name,'1.0', END)
-                self.sentence_text_view.tag_add(tag_name, '1.%s' % start_at, '1.%s' % end_at)
-                self.sentence_text_view.tag_config(tag_name, background=fe_color)
-                arg_ann = self._find_arg_ann(self.cur_event_ann.args_ann, fe.ID)
+
+                arg_ann = self._find_arg_ann(self.cur_event_ann.args_ann, fe.ID, int(start_at), int(end_at))
                 if arg_ann:
-                    arg_ann.start_at =  start_at
-                    arg_ann.end_at = end_at
+                    tag_name = '%s-%s-%s:%s' % (fe.ID, self.cur_event_ann.id, arg_ann.start_at, arg_ann.end_at)
+                    self.sentence_text_view.tag_remove(tag_name,'1.0', END)
+                    arg_ann.start_at =  int(start_at)
+                    arg_ann.end_at = int(end_at)
                     arg_ann.updated_at = fnutils.now()
-                    print('update arg_ann')
+                    print('update arg_ann start_at %s end_at %s' % (arg_ann.start_at, arg_ann.end_at))
                 else:
                     self.cur_event_ann.args_ann.append(ArgANN(start_at=start_at,
                                                      end_at=end_at,
@@ -150,6 +150,11 @@ class SentenceAnnotation(Frame):
                                                      event_ann_id=self.cur_event_ann.id,
                                                               annotator_id=self.options['annotator_id']))
                     print('create arg_ann')
+                tag_name = '%s-%s-%s:%s' % (fe.ID, self.cur_event_ann.id, start_at, end_at)
+                self.sentence_text_view.tag_remove(tag_name,'1.0', END)
+                self.sentence_text_view.tag_add(tag_name, '1.%s' % start_at, '1.%s' % end_at)
+                self.sentence_text_view.tag_config(tag_name, background=fe_color)
+                    
                 self._update_fes_selections(self.cur_event_ann)
                                                      
             
@@ -161,7 +166,7 @@ class SentenceAnnotation(Frame):
     def load_event_ann_tags(self):
         if self.cur_event_ann:
             for arg_ann in self.cur_event_ann.args_ann:
-                tag_name = '%s-%s' % (arg_ann.event_fe_id, self.cur_event_ann.id)
+                tag_name = '%s-%s-%s:%s' % (arg_ann.event_fe_id, self.cur_event_ann.id, arg_ann.start_at, arg_ann.end_at)
                 self.sentence_text_view.tag_remove(tag_name,'1.0', END)
                 self.sentence_text_view.tag_add(tag_name, '1.%s' % arg_ann.start_at, '1.%s' % arg_ann.end_at)
                 print('even_ann_id = %s event_fe_id %s' % (arg_ann.event_ann_id, arg_ann.event_fe_id))
@@ -188,7 +193,7 @@ class SentenceAnnotation(Frame):
     def event_type_selection_handler(self, event_ann, frame):
         if self.cur_event_ann:
             for arg_ann in self.cur_event_ann.args_ann:
-                tag_name = '%s-%s' % (arg_ann.event_fe_id, self.cur_event_ann.id)
+                tag_name = '%s-%s-%s:%s' % (arg_ann.event_fe_id, self.cur_event_ann.id, arg_ann.start_at, arg_ann.end_at)
                 self.sentence_text_view.tag_delete(tag_name,'1.0', END)
                 print('delete tag')
             #if event_ann and self.cur_event_ann.event_fn_id != event_ann.event_fn_id:
@@ -200,7 +205,7 @@ class SentenceAnnotation(Frame):
             print('Frame name: %s \n event_id: %s \n event_args %s' % (frame.name, event_ann.event_id, event_ann.args_ann))
             #self.fe_selection.set_args_ann(event_ann.args_ann)
             self.fe_selection.update_fes()
-            self.fe_selection.set_args_ann_fes(fnutils.get_fes_from_args(event_ann, event_ann.args_ann))#get_args_ann_fes(event_ann.id, self.options['annotator_id']))
+            self.fe_selection.set_args_ann_fes(fnutils.get_fes_from_args(event_ann, event_ann.args_ann), event_ann.args_ann , self.sentence.text)#get_args_ann_fes(event_ann.id, self.options['annotator_id']))
             self.fe_selection.set_core_fes(fnutils.filter_core_fes(frame))
             self.fe_selection.set_peripheral_fes(fnutils.filter_peripheral_fes(frame))
             #_thread.start_new_thread(self.load_val_ann, (self.options['annotator_id'], event_ann.id)) 
@@ -212,7 +217,7 @@ class SentenceAnnotation(Frame):
         self.fe_selection.update_fes()
         if self.cur_event_ann:
             for arg_ann in self.cur_event_ann.args_ann:
-                tag_name = '%s-%s' % (arg_ann.event_fe_id, self.cur_event_ann.id)
+                tag_name = '%s-%s-%s:%s' % (arg_ann.event_fe_id, self.cur_event_ann.id, arg_ann.start_at, arg_ann.end_at)
                 self.sentence_text_view.tag_delete(tag_name,'1.0', END)
                 print('delete tag')
         self.cur_event_ann = None
@@ -223,7 +228,7 @@ class SentenceAnnotation(Frame):
             print('update_fes_selection frame id: %s' % frame.ID)
             self.fe_selection.update_selections()
             
-            self.fe_selection.set_args_ann_fes(fnutils.get_fes_from_args(event_ann, event_ann.args_ann))
+            self.fe_selection.set_args_ann_fes(fnutils.get_fes_from_args(event_ann, event_ann.args_ann), event_ann.args_ann, self.sentence.text)
             self.fe_selection.set_core_fes(fnutils.filter_core_fes(frame))
             self.fe_selection.set_peripheral_fes(fnutils.filter_peripheral_fes(frame))
 
