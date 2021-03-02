@@ -6,7 +6,7 @@ __pycache__/
 # data files
 data/TimeBankPT/
 data/ti
-
+run_env
 /src/*.db
 
 # C extensions

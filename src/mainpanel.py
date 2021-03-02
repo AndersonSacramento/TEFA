@@ -10,21 +10,23 @@ class MainPanel(Frame):
     def __init__(self, options, parent=None):
         Frame.__init__(self, parent)
         self.pack(expand=YES, fill=BOTH)
-        self.makeWidgets(options)
         self.options = options
+        self.makeWidgets(options)
+
 
 
     def makeWidgets(self, options):
-        self.login_frame = LoginPanel(options, parent=self)
-        self.login_frame.set_on_load_annotator(self.load_sentences_frame)
-
+        #self.login_frame = LoginPanel(options, parent=self)
+        #self.login_frame.set_on_load_annotator(self.load_sentences_frame)
+        self.load_sentences_frame(None)
         
 
     def load_sentences_frame(self, email):
-        self.login_frame.pack_forget()
-        self.back_btn = Button(self, text='Retornar', command=self.handle_back_btn)
-        self.back_btn.pack(side=TOP, anchor=NW)
-        self.options['email'] = email
+        #self.login_frame.pack_forget()
+        #self.back_btn = Button(self, text='Retornar', command=self.handle_back_btn)
+        #self.back_btn.pack(side=TOP, anchor=NW)
+        annotator = fnutils.find_unique_annotator()
+        self.options['email'] = annotator.email
         self.sentences_frame = SentencesPanel(self.options, parent=self)
         self.sentences_frame.pack(side=TOP, expand=YES, fill=BOTH)
         

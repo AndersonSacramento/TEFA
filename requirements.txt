@@ -1,5 +1,2 @@
-rich
 nltk
 sqlalchemy
-tkinter
--e git+https://andersonsacramento@bitbucket.org/andersonsacramento/timebankpttoolkit.git#egg=timebankpttoolkit

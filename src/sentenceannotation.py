@@ -6,6 +6,7 @@ from tkinter import *
 from tkinter import ttk
 import _thread, queue, time
 import fnutils
+from frameview import FrameView
 from db import ArgANN
 from copy import copy
 
@@ -37,13 +38,34 @@ class SentenceAnnotation(Frame):
         text.pack(side=TOP, expand=YES, fill=BOTH)
         text.bind('<KeyPress>', lambda e: self.on_keyboard(e))
         #text.bind('<Key>', lambda e: 'break')
-        text.bind('<Button-2>', lambda e: self.middle_button_in_text)
+        #text.bind('<Button-2>', lambda e: self.middle_button_in_text)
 
         self.sentence_text_view = text
+
+
+        ann_frame = Frame(left_frame)
+        self.fe_arg_var = StringVar()
+        label_fe =  Label(ann_frame, text='', textvariable=self.fe_arg_var)
+        label_fe.pack(side=LEFT, expand=YES)
+        self.label_fe = label_fe
+
+
+        txt_fe_def = Text(ann_frame, font=('times', 12), height=2, width=50)
+        txt_fe_def.pack(side=LEFT, expand=YES)
+        txt_fe_def.bind('<KeyPress>', lambda e: self.on_keyboard(e))
+        #txt_fe_def.bind('<Key>', lambda e: 'break')
+        self.txt_fe_def = txt_fe_def
+
+
+        btn_tag = Button(ann_frame, text='Anotar', command=self.annotate_arg)
+        btn_tag.pack(side=RIGHT, expand=YES)
+        ann_frame.pack(side=TOP, expand=YES, fill=X)
+        
 
         self.fe_selection = FESelection(options, parent=left_frame)
         self.fe_selection.pack(side=TOP, anchor=SW)
         self.fe_selection.set_arg_ann_remove_handler(self.arg_ann_remove_handler)
+        self.fe_selection.set_on_fe_selection_handler(self.set_fe_arg_label)
         left_frame.pack(side=LEFT, expand=YES, fill=BOTH)
         #self.fe_selection.set_arg_val_handler(self.arg_val_handler)
         
@@ -58,8 +80,7 @@ class SentenceAnnotation(Frame):
 
         # btn_frame = Frame(right_frame)
 
-        # btn_tag = Button(btn_frame, text='Anotar', command=self.annotate_arg)
-        # btn_tag.pack(side=LEFT)
+         
         
         # btn_save = Button(btn_frame, text='Salvar', command=self.save_annotation)
         # btn_save.pack(side=RIGHT, anchor=SE)
@@ -69,13 +90,34 @@ class SentenceAnnotation(Frame):
         # btn_frame.pack(side=TOP)
         right_frame.pack(side=RIGHT, expand=YES, fill=BOTH)
 
+        self.register_key_bindings()
 
-
-        self.bind('<Control-1>', (lambda e: print('control 1 clicked'))) 
 
         
+
+        
+    def register_key_bindings(self):
+        parent = self.parent
+
+
+        parent.bind_all('<KeyPress>', self.on_keyboard)
+        parent.bind_all('<Alt-c>', lambda e: self.fe_selection.cycle_selection_core_fe())
+        parent.bind_all('<Alt-p>', lambda e: self.fe_selection.cycle_selection_peripheral_fe())
+        parent.bind_all('<Alt-a>', )
         
 
+
+    def load_view_frame_info(self):
+        if self.cur_event_ann:
+            frame = fnutils.frame_by_id(self.cur_event_ann.event_fn_id)
+            if frame:
+                win = Toplevel()
+                frame_view = FrameView({'frame':frame}, win)
+                win.focus_set()
+                win.grab_set()
+                win.wait_window()
+
+        
     def load_content(self, options):
         _thread.start_new_thread(self.load_sentence, (options['sentence_id'], options['annotator_id']))
         self.sentence = None
@@ -119,15 +161,40 @@ class SentenceAnnotation(Frame):
 
     def on_keyboard(self, event):
         pressed = event.char
+     
+        #self.bind_all('<Control-Key-f>', lambda e: Frame.destroy(self.parent))
+        
         if pressed == 'a':
             self.annotate_arg()
-            return "break"
+        elif pressed == 'i':
+            self.load_view_frame_info()
+        elif pressed == 'q':
+            Frame.destroy(self.parent)
+        elif pressed == 't':
+            self.frame_selection.cycle_combobox_trigger()
+
+        return "break"
+
+    def set_fe_arg_label(self):
+        output = self.fe_selection.get_radio_fe_and_color()
+        if output:
+            fe, fe_color = output
+            self.fe_arg_var.set(fe.name)
+            self.txt_fe_def.delete('1.0', END)
+            self.txt_fe_def.insert('1.0', fe.definition)
+            self.label_fe.config(background=fe_color)
         else:
-            return "break"
-        
+            self.fe_arg_var.set('')
+            bg = self.cget("background")
+            self.label_fe.config(background=bg)
+            self.txt_fe_def.delete('1.0', END)
+            self.txt_fe_def.insert('1.0', '')
         
     def annotate_arg(self):
-        text = self.sentence_text_view.get(SEL_FIRST, SEL_LAST)
+        try:
+            text = self.sentence_text_view.get(SEL_FIRST, SEL_LAST)
+        except Exception:
+            text = ''
         if text and self.fe_selection.is_selected():
             start_at = self.sentence_text_view.index(SEL_FIRST).split('.')[1]
             end_at = self.sentence_text_view.index(SEL_LAST).split('.')[1]
@@ -166,9 +233,9 @@ class SentenceAnnotation(Frame):
                 self._update_fes_selections(self.cur_event_ann)
                                                      
             
-        sel_first_pos = SEL + '.first'
-        sel_last_pos = SEL + '.last'
-        print('annotate arg %s \n %s %s %s' % (text, str(self.sentence_text_view.index(sel_first_pos)), str(self.sentence_text_view.index(sel_last_pos)), str(len(self.sentence_text_view.get('0.0', END)))))
+        #sel_first_pos = SEL + '.first'
+        #sel_last_pos = SEL + '.last'
+        #print('annotate arg %s \n %s %s %s' % (text, str(self.sentence_text_view.index(sel_first_pos)), str(self.sentence_text_view.index(sel_last_pos)), str(len(self.sentence_text_view.get('0.0', END)))))
 
 
     def load_event_ann_tags(self):
@@ -220,6 +287,7 @@ class SentenceAnnotation(Frame):
         else:
             self.fe_selection.update_fes()
         self.load_event_ann_tags()
+        self.set_fe_arg_label()
         _thread.start_new_thread(self.save_events_ann, ())
 
 

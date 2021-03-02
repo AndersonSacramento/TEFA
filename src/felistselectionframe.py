@@ -10,12 +10,30 @@ class FEListSelectionFrame(Frame):
         self.pack(expand=YES, fill=BOTH)
         self.options = options
         self.fes = {}
+        self.fes_colors = []
         self.make_widgets()
 
     def set_fes(self, fes):
         self.fes = fes
+        self.fes_colors = list(fes.values())
         self.create_fes_radios_list()
 
+    def cycle_selection_fe(self):
+        if self.fes_colors:
+            cur_fe_name = self.var_fes.get()
+            self.var_fes.set(self._get_next_fe_name(cur_fe_name))
+            self.on_press_radio_arg()
+
+    def _get_next_fe_name(self, fe_name):
+        i = 0
+        for fe_color in self.fes_colors:
+            if fe_color.fe.name == fe_name:
+                break
+            i += 1
+        if i+1 < len(self.fes_colors):
+            return self.fes_colors[i+1].fe.name
+        else:
+            return self.fes_colors[0].fe.name
 
     def on_press_radio_arg(self):
         pick = self.var_fes.get()
@@ -30,7 +48,7 @@ class FEListSelectionFrame(Frame):
     def get_radio_fe_and_color(self):
         fe_name = self.var_fes.get()
         if self.fes:
-            for fe_color in self.fes.values():
+            for fe_color in self.fes_colors:
                 if fe_color.fe.name == fe_name:
                     return (fe_color.fe, fe_color.color)
             return None
@@ -52,7 +70,7 @@ class FEListSelectionFrame(Frame):
         self.fes_selection_vars = []
 
         #fes_colors = [fe_color.color for fe_color in self.fes.values()]
-        for i, fe_color in enumerate(self.fes.values()):
+        for i, fe_color in enumerate(self.fes_colors):
             row = Frame(self)
             row_type = Frame(row)
             rad_type = Radiobutton(row_type, text=fe_color.fe.name, value=fe_color.fe.name, variable=self.var_fes, command=self.on_press_radio_arg, bg=fe_color.color)

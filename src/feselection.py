@@ -55,9 +55,23 @@ class FESelection(Frame):
     def get_radio_fe_and_color(self):
         if self.selection_frame:
            return  self.selection_frame.get_radio_fe_and_color()
-    
+
+    def cycle_selection_core_fe(self):
+        self.core_selection_list.cycle_selection_fe()
+
+    def cycle_selection_peripheral_fe(self):
+        self.peripheral_selection_list.cycle_selection_fe()
+
+    def cycle_selection_ann_fe(self):
+        pass
+
+    def set_on_fe_selection_handler(self, fn):
+        self.on_fe_selection_handler = fn
+        
     def on_fe_selection(self, selection_frame):
         self.selection_frame = selection_frame
+        if self.on_fe_selection_handler:
+            self.on_fe_selection_handler()
 
     def is_selected(self):
         return self.selection_frame is not None

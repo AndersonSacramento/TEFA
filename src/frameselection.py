@@ -69,7 +69,7 @@ class FrameSelection(Frame):
         label.config(textvariable=self.var_event_type)
 
 
-        self.igm = PhotoImage(file="../imgs/remove_icon.gif")
+        self.igm = PhotoImage(file="imgs/remove_icon.gif")
         self.btn_remove_type = Button(row_type, image=self.igm, command=self.remove_event_type_handler)
         self.btn_remove_type.pack_forget()
 
@@ -227,6 +227,12 @@ class FrameSelection(Frame):
             trigger_lemma = self.events[i].lemma
             _thread.start_new_thread(self.load_frames_suggestions, (trigger_lemma,))
 
+    def cycle_combobox_trigger(self):
+        if self.events:
+            i = self.triggers_combo.current()
+            i = (int(i) + 1) % len(self.events)
+            self.triggers_combo.current(i)
+            self.trigger_change_handler(None)
         
     def load_frames_suggestions(self, trigger_lemma):
         for frame_id in fnutils.query_frameid(trigger_lemma):

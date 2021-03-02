@@ -18,10 +18,10 @@ class FrameView(Frame):
     def make_widgets(self):
         self.scroll_text = ScrolledText(self, text=str(self.fn_frame))
         self.scroll_text.get_text_widget().bind("<KeyPress>", self.on_keyboard)
-        self.scroll_text.get_text_widget().bind('<Control-Key-h>', self.key_bind_help)
 
 
-    def key_bind_help(self, event):
+
+    def key_bind_help(self):
         text = """
         Pressione a : Visualizar resumo de informações do frame\n\n
         Pressione d : Visualizar definição do frame\n\n
@@ -30,7 +30,7 @@ class FrameView(Frame):
         Pressione c : Visualizar os elementos core do frame\n\n
         Pressione p : Visualizar os elementos peripheral do frame\n\n
         Pressione q : Fechar janela de visualização do frame\n\n
-        Pressione Ctrl-h : Visualizar lista de teclas e funções\n\n
+        Pressione h : Visualizar lista de teclas e funções\n\n
         """
         self.scroll_text.settext(text)
         
@@ -55,6 +55,8 @@ class FrameView(Frame):
             self.print_core_fes()
         elif pressed == 'p':
             self.print_peripheral_fes()
+        elif pressed == 'h':
+            self.key_bind_help()
         
         return 'break'
 

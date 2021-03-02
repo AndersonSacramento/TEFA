@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 
 from sqlalchemy.orm import sessionmaker
 
-import timebankpttoolkit.timebankptcorpus as timebankpt
+#import timebankpttoolkit.timebankptcorpus as timebankpt
 from datetime import datetime, timezone
 import uuid
 
@@ -155,6 +155,14 @@ def query_frameid(lemma_name):
     with session_scope() as session:
         frames_id = {out[0] for out in session.query(LemmaFN.frameid).filter_by(lemma=lemma_name).all()}
     return frames_id
+
+
+def find_unique_annotator():
+    annotator = None
+    with session_scope() as session:
+        annotator = session.query(Annotator).first()
+    return annotator
+
 
 def frame_by_id(frame_id):
     return fn.frame(frame_id)

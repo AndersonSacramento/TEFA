@@ -6,6 +6,8 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
+RUN python -c "import nltk; nltk.download('framenet_v17')"
+
 COPY src/ .
 
-CMD ["python", "./test.py"]
+CMD ["python", "./mainpanel.py"]

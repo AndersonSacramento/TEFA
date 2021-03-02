@@ -89,7 +89,7 @@ class FESelectedListFrame(Frame):
                 msg_arg.config(width=250)
                 msg_arg.pack(side=LEFT, expand=YES, anchor=NW)
 
-                img = PhotoImage(file="../imgs/remove_icon_18.gif")
+                img = PhotoImage(file="imgs/remove_icon_18.gif")
                 self.imgs.append(img)
                 btn_remove_arg = Button(row_text, image=img, command=lambda arg_ann=arg_ann: self.remove_event_arg_handler(arg_ann))
                 btn_remove_arg.pack(side=RIGHT)

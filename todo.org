@@ -4,3 +4,6 @@
 ** filter peripheral fe
 ** populate lemma table
 ** create annotation tables
+* run cmd
+sudo docker run --name tefa -d --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -v `pwd`:/mnt/data/ mytefa
+sudo docker start tefa
