@@ -166,8 +166,9 @@ class FrameSelection(Frame):
         self.var_event_type.set('Tipo: %s' % s)
         event_pos = self.triggers_combo.current()
         event = self._event_by_position(event_pos)
-        if self.all_frames:
-            frame = self.all_frames[i]
+        frames = self.search_results if self.search_results else self.all_frames
+        if frames:
+            frame = frames[i]
             self.selected_frames[frame.ID] = frame
             event_ann = self.create_or_update_event_ann(event.id, frame.ID)
             self.btn_remove_type.pack(side=RIGHT)

@@ -117,7 +117,7 @@ class EventANN(Base):
     annotator_id = Column(String, ForeignKey('annotator.email'))
 
     annotator = relationship('Annotator', back_populates='events_ann')
-    args_ann = relationship('ArgANN', back_populates='event_ann', lazy='subquery')
+    args_ann = []#relationship('ArgANN', back_populates='event_ann')#, lazy='subquery')
 
     def copy(self):
         return EventANN(id=self.id,
@@ -142,7 +142,7 @@ class ArgANN(Base):
     event_ann_id = Column(String, ForeignKey('event_ann.id'), primary_key=True)
     annotator_id = Column(String, ForeignKey('annotator.email'), primary_key=True)
     annotator = relationship('Annotator', back_populates='args_ann')
-    event_ann = relationship('EventANN', back_populates='args_ann')
+    #event_ann = relationship('EventANN', back_populates='args_ann')
 
 
     def copy(self):

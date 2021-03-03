@@ -4,6 +4,7 @@ from feselection import FESelection
 from frameselection import FrameSelection
 from tkinter import *
 from tkinter import ttk
+from tkinter.messagebox import askquestion
 import _thread, queue, time
 import fnutils
 from frameview import FrameView
@@ -29,7 +30,10 @@ class SentenceAnnotation(Frame):
 
     def load_default_modes(self):
         self.set_search_mode(False)
-
+        self.to_delete_arg_ann = None
+        self.set_delete_mode(False)
+        self.set_delete_arg_mode(False)
+        self.set_delete_event_type_mode(False)
 
     def middle_button_in_text(self):
         self.sentence_text_view.edit_undo()
@@ -158,6 +162,25 @@ class SentenceAnnotation(Frame):
         self.search_mode = value
         self.search_str = ''
 
+    def set_delete_event_type_mode(self, value):
+        self.delete_event_type_mode = value
+
+    def is_delete_event_type_mode(self):
+        return self.delete_event_type_mode
+    
+    def set_delete_arg_mode(self, value):
+        self.delete_arg_mode = value
+        
+
+    def is_delete_arg_mode(self):
+        return self.delete_arg_mode
+    
+    def set_delete_mode(self, value):
+        self.delete_mode = value
+
+    def is_delete_mode(self):
+        return self.delete_mode
+
     def increment_search_str(self, char):
         self.search_str += char
         print('search string: %s' % self.search_str)
@@ -175,7 +198,29 @@ class SentenceAnnotation(Frame):
         pressed = event.keysym
      
         #self.bind_all('<Control-Key-f>', lambda e: Frame.destroy(self.parent))
-        if self.is_search_mode():
+        if self.is_delete_mode():
+            if pressed == 'g':
+                self.set_delete_mode(False)
+            elif pressed == 'a':
+                self.set_delete_mode(False)
+                self.set_delete_arg_mode(True)
+                self.set_next_arg_ann_to_delete()
+            elif pressed == 't':
+                self.set_delete_mode(False)
+                self.set_delete_event_type_mode(True)
+        elif self.is_delete_arg_mode():
+            if pressed == 'Return':
+                self.ask_delete_cur_arg()
+            elif pressed == 'g':
+                self.set_delete_arg_mode(False)
+                self.load_event_args_ann_tags()
+            elif pressed == 'n' or (self._is_ctrl_key(event) and pressed == 'n'):
+                self.set_next_arg_ann_to_delete()
+            elif pressed == 'p' or (self._is_ctrl_key(event) and pressed == 'p'):
+                self.set_previous_arg_ann_to_delete()
+        elif self.is_delete_event_type_mode():
+            self.delete_event_type_mode(False)
+        elif self.is_search_mode():
             if self._is_ctrl_key(event):
                 if  pressed == 'g':
                     print('cancel search mode')
@@ -211,6 +256,9 @@ class SentenceAnnotation(Frame):
             elif pressed == 'g':
                 print('cancel search mode')
                 self.set_search_mode(False)
+            elif pressed == 'd':
+                print('delete mode')
+                self.set_delete_mode(True)
                 
         else:
             if pressed == 'a':
@@ -288,15 +336,18 @@ class SentenceAnnotation(Frame):
         #print('annotate arg %s \n %s %s %s' % (text, str(self.sentence_text_view.index(sel_first_pos)), str(self.sentence_text_view.index(sel_last_pos)), str(len(self.sentence_text_view.get('0.0', END)))))
 
 
-    def load_event_ann_tags(self):
+    def load_event_args_ann_tags(self):
         if self.cur_event_ann:
             for arg_ann in self.cur_event_ann.args_ann:
-                tag_name = '%s-%s-%s:%s' % (arg_ann.event_fe_id, self.cur_event_ann.id, arg_ann.start_at, arg_ann.end_at)
-                self.sentence_text_view.tag_remove(tag_name,'1.0', END)
-                self.sentence_text_view.tag_add(tag_name, '1.%s' % arg_ann.start_at, '1.%s' % arg_ann.end_at)
-                print('even_ann_id = %s event_fe_id %s' % (arg_ann.event_ann_id, arg_ann.event_fe_id))
-                fe_color = self.fe_selection.get_fe_color(arg_ann.event_fe_id)
-                self.sentence_text_view.tag_config(tag_name, background=fe_color)
+                self.load_arg_ann_tag(arg_ann)
+
+    def load_arg_ann_tag(self, arg_ann):
+        tag_name = '%s-%s-%s:%s' % (arg_ann.event_fe_id, self.cur_event_ann.id, arg_ann.start_at, arg_ann.end_at)
+        self.sentence_text_view.tag_remove(tag_name,'1.0', END)
+        self.sentence_text_view.tag_add(tag_name, '1.%s' % arg_ann.start_at, '1.%s' % arg_ann.end_at)
+        print('even_ann_id = %s event_fe_id %s' % (arg_ann.event_ann_id, arg_ann.event_fe_id))
+        fe_color = self.fe_selection.get_fe_color(arg_ann.event_fe_id)
+        self.sentence_text_view.tag_config(tag_name, background=fe_color)
         
 
     def highlight_event(self, event):
@@ -304,7 +355,37 @@ class SentenceAnnotation(Frame):
             self.sentence_text_view.tag_delete('trigger', '1.0', END)
             self.sentence_text_view.tag_add('trigger','1.%s' % event.start_at, '1.%s' % event.end_at)
             self.sentence_text_view.tag_config('trigger', font=('times', 16, 'bold'))
-    
+
+
+    def _set_step_arg_ann_to_delete(self, step_fn):
+        if self.cur_event_ann and self.cur_event_ann.args_ann:
+            args_ann = self.cur_event_ann.args_ann
+            len_args = len(args_ann)
+            if self.to_delete_arg_ann:
+                index = args_ann.index(self.to_delete_arg_ann)
+                self.to_delete_arg_ann = args_ann[step_fn(index) % len_args]
+            else:
+                self.to_delete_arg_ann = args_ann[0]
+
+            self.delete_all_args_ann_tags()
+            self.load_arg_ann_tag(self.to_delete_arg_ann)
+        else:
+            self.set_delete_arg_mode(False)
+
+    def set_next_arg_ann_to_delete(self):
+        self._set_step_arg_ann_to_delete(lambda i: i+1)
+        
+    def set_previous_arg_ann_to_delete(self):
+        self._set_step_arg_ann_to_delete(lambda i: i-1)
+
+    def ask_delete_cur_arg(self):
+        ans = askquestion('Pergunta', 'Você confirma a remoção do argumento?', parent=self)
+        if ans == 'yes':
+            self.arg_ann_remove_handler(self.to_delete_arg_ann)
+            self.load_event_args_ann_tags()
+            self.set_delete_arg_mode(False)
+        
+            
     def event_val_handler(self, val_event_ann):
         if self.cur_event_ann:
             val_event_ann.event_ann_id = self.cur_event_ann.id
@@ -319,14 +400,21 @@ class SentenceAnnotation(Frame):
             _thread.start_new_thread(fnutils.save_val_arg, (val_arg_ann,))
 
 
-    
 
-    def event_type_selection_handler(self, event, event_ann, frame):
+
+
+    def delete_arg_ann_tag(self, arg_ann):
+        tag_name = '%s-%s-%s:%s' % (arg_ann.event_fe_id, self.cur_event_ann.id, arg_ann.start_at, arg_ann.end_at)
+        self.sentence_text_view.tag_delete(tag_name,'1.0', END)
+        print('delete tag')
+
+    def delete_all_args_ann_tags(self):
         if self.cur_event_ann:
             for arg_ann in self.cur_event_ann.args_ann:
-                tag_name = '%s-%s-%s:%s' % (arg_ann.event_fe_id, self.cur_event_ann.id, arg_ann.start_at, arg_ann.end_at)
-                self.sentence_text_view.tag_delete(tag_name,'1.0', END)
-                print('delete tag')
+                self.delete_arg_ann_tag(arg_ann)
+                
+    def event_type_selection_handler(self, event, event_ann, frame):
+        self.delete_all_args_ann_tags()
             #if event_ann and self.cur_event_ann.event_fn_id != event_ann.event_fn_id:
             #    event_ann.args_ann = []
             #    print('set empty list')
@@ -343,7 +431,7 @@ class SentenceAnnotation(Frame):
         else:
             self.fe_selection.update_fes()
         self.highlight_event(event)
-        self.load_event_ann_tags()
+        self.load_event_args_ann_tags()
         self.set_fe_arg_label()
         _thread.start_new_thread(self.save_events_ann, ())
 
@@ -365,7 +453,7 @@ class SentenceAnnotation(Frame):
         self.cur_event_ann = None
 
     def arg_ann_remove_handler(self, arg_ann):
-        if self.cur_event_ann:
+        if self.cur_event_ann and arg_ann:
             tag_name = '%s-%s-%s:%s' % (arg_ann.event_fe_id, self.cur_event_ann.id, arg_ann.start_at, arg_ann.end_at)
             self.sentence_text_view.tag_delete(tag_name,'1.0', END)
             self.cur_event_ann.args_ann.remove(arg_ann)
