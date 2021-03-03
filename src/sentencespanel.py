@@ -19,6 +19,7 @@ class SentencesPanel(Frame):
     def __init__(self, options, parent=None):
         Frame.__init__(self, parent)
         self.pack(expand=YES, fill=BOTH)
+        self.parent = parent
         self.makeWidgets(options)
         self.options = options
         self.todo_queue = queue.Queue()
@@ -64,16 +65,49 @@ class SentencesPanel(Frame):
 
 
         # Move between lists
-        self.doing_scroll.set_ctrl_1_handler(lambda i, s: self.todo_scroll.get_list_focus())
-        self.done_scroll.set_ctrl_1_handler(lambda i, s: self.todo_scroll.get_list_focus())
+        self.doing_scroll.set_ctrl_1_handler(lambda i, s: self.set_current_focus_list(self.todo_scroll))
+        self.done_scroll.set_ctrl_1_handler(lambda i, s: self.set_current_focus_list(self.todo_scroll))
         
-        self.todo_scroll.set_ctrl_2_handler(lambda i, s: self.doing_scroll.get_list_focus())
-        self.done_scroll.set_ctrl_2_handler(lambda i, s: self.doing_scroll.get_list_focus())
+        self.todo_scroll.set_ctrl_2_handler(lambda i, s: self.set_current_focus_list(self.doing_scroll))
+        self.done_scroll.set_ctrl_2_handler(lambda i, s: self.set_current_focus_list(self.doing_scroll))
 
-        self.todo_scroll.set_ctrl_3_handler(lambda i, s: self.done_scroll.get_list_focus())
-        self.doing_scroll.set_ctrl_3_handler(lambda i, s: self.done_scroll.get_list_focus())
+        self.todo_scroll.set_ctrl_3_handler(lambda i, s: self.set_current_focus_list(self.done_scroll))
+        self.doing_scroll.set_ctrl_3_handler(lambda i, s: self.set_current_focus_list(self.done_scroll))
+
+        self.set_current_focus_list(self.todo_scroll)
+        self.parent.bind_all('<KeyPress>', self.on_keyboard)
 
 
+    def set_current_focus_list(self, scroll_list):
+        self.focus_list = scroll_list
+        scroll_list.get_list_focus()
+        
+    def _is_ctrl_key(self, event):
+        return event.state & 0x0004 or event.keysym == 'Control_L' or event.keysym == 'Control_R'
+
+
+    def select_next_in_focus_list(self):
+        if self.focus_list:
+            self.focus_list.select_next()
+
+    def select_previous_in_focus_list(self):
+        if self.focus_list:
+            self.focus_list.select_previous()
+
+    def on_keyboard(self, event):
+        pressed = event.keysym
+
+        if self._is_ctrl_key(event):
+            if pressed == 'n':
+                self.select_next_in_focus_list()
+            elif pressed == 'p':
+                self.select_previous_in_focus_list()
+        elif pressed == 'Down':
+            self.select_next_in_focus_list()
+        elif pressed == 'Up':
+            self.select_previous_in_focus_list()
+            
+        
     def load_content(self):
         self.set_email(self.options['email'])
 
@@ -160,7 +194,7 @@ class SentencesPanel(Frame):
         try:
             sentence = self.done_queue.get(block=False)
         except queue.Empty:
-            pass
+            self.done_scroll.print_list_size()
         else:
             self.done_scroll.add_line(END, sentence.text)
         self.after(50, lambda: self.update_done_sentence_list())
@@ -169,7 +203,7 @@ class SentencesPanel(Frame):
         try:
             sentence = self.doing_queue.get(block=False)
         except queue.Empty:
-            pass
+            self.doing_scroll.print_list_size()
         else:
             self.doing_scroll.add_line(END, sentence.text)
         self.after(50, lambda: self.update_doing_sentence_list())
@@ -178,7 +212,7 @@ class SentencesPanel(Frame):
         try:
             sentence = self.todo_queue.get(block=False)
         except queue.Empty:
-            pass
+            self.todo_scroll.print_list_size()
         else:
             self.todo_scroll.add_line(END, sentence.text)
         self.after(50, lambda: self.update_todo_sentence_list())        

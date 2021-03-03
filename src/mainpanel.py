@@ -40,7 +40,7 @@ class MainPanel(Frame):
 if __name__ == '__main__':
     options = {'todo':{'title': 'Anotar'}, # 'data':['sent1', 'sent2']},
                'doing':{'title': 'Anotando'},# 'data':[]},
-               'done': {'title': 'Anotado'},#, 'data':['sent0'] },
+               'done': {'title': 'Anotada'},#, 'data':['sent0'] },
                'annotators':{'title': 'Anotadores'}}#'data':['ander@mail.com', 'silva@gmail.com']}}
     fnutils.create_session()
     root = Tk()

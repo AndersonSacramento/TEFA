@@ -163,6 +163,11 @@ class SentenceAnnotation(Frame):
         print('search string: %s' % self.search_str)
         self.frame_selection.search_frame(self.search_str)
 
+    def decrement_search_str(self):
+        self.search_str = self.search_str[:-1]
+        print('search string: %s' % self.search_str)
+        self.frame_selection.search_frame(self.search_str)
+        
     def is_search_mode(self):
         return self.search_mode
     
@@ -187,7 +192,10 @@ class SentenceAnnotation(Frame):
             else:
                 if pressed == 'underscore':
                     pressed = '_'
-                self.increment_search_str(pressed)
+                if pressed == 'BackSpace':
+                    self.decrement_search_str()
+                else:
+                    self.increment_search_str(pressed)
         elif self._is_alt_key(event):
             if pressed == 'c':
                 self.fe_selection.cycle_selection_core_fe()

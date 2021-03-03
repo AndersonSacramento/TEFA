@@ -1,4 +1,4 @@
-"a simple customizable scrolled listbox component"
+"A simple customizable scrolled listbox component"
 from tkinter import *
 
 class ScrolledList(Frame):
@@ -8,6 +8,7 @@ class ScrolledList(Frame):
         self.pack(expand=YES, fill=BOTH)
         self.config(takefocus=0)
         parent.config(takefocus=0)
+        self.options = options
         self.makeWidgets(options)
 
     def handleList(self, event):
@@ -21,7 +22,21 @@ class ScrolledList(Frame):
         label = self.listbox.get(index)
         return index, label
 
+    def get_list_size(self):
+        return self.listbox.size()
+
+    def select_item(self, item_index):
+        if 0 <= item_index < self.listbox.size() :
+            self.listbox.selection_clear(0, END)
+            self.listbox.selection_set(item_index)
+            self.listbox.see(item_index)
+
+    def is_selected(self):
+        index = self.listbox.curselection()
+        return len(index) > 0
+    
     def select_next(self):
+        if self.get_list_size() == 0: return
         index = self.listbox.curselection()
         index = index[0] if index else 0
         print('next index %s' % index)
@@ -31,7 +46,9 @@ class ScrolledList(Frame):
         self.listbox.selection_set(index)
         self.listbox.see(index)
 
+
     def select_previous(self):
+        if self.get_list_size() == 0: return
         index = self.listbox.curselection()
         index = index[0] if index else 1
         print('previous index %s' % index)
@@ -44,17 +61,46 @@ class ScrolledList(Frame):
     def config_listbox(self, **configs):
         print(configs)
         self.listbox.config(**configs)
+
+
+    def print_list_size(self):
+        size = self.get_list_size()
+        title = self.options['title']
+        if size > 1:
+            title_end =  title[-3:]
+            if title_end == 'ada' or title_end == 'ido' or title_end == 'odo':
+                title_end += 's'
+            text = title[:-3] + title_end + ' %s' % size
+        elif size == 1:
+            text = title + ' %s' % size
+        else:
+            text = title
+        self.label_title.config(text=text)
         
+    
+    def set_single_mode(self):
+        self.listbox.config(selectmode=SINGLE)
+
+    def set_browse_mode(self):
+        self.listbox.config(selectmode=BROWSE)
+
+    def set_multiple_mode(self):
+        self.listbox.config(selectmode=MULTIPLE)
+
     def makeWidgets(self, options):
         print(options)
-        Label(self, text=options['title'], takefocus=0).pack(side=TOP)
+        label_title = Label(self, text=options['title'], takefocus=0)
+        label_title.pack(side=TOP)
+
+        self.label_title = label_title
+        
         sbar = Scrollbar(self, takefocus=0)
         list = Listbox(self, relief=SUNKEN,takefocus=1)
         sbar.config(command=list.yview)
         list.config(yscrollcommand=sbar.set)
         sbar.pack(side=RIGHT, fill=Y)
         list.pack(side=LEFT, expand=YES, fill=BOTH)
-        list.config(selectmode=SINGLE)
+
         pos = 0
         if 'data' in options:
             for label in options['data']:
@@ -68,6 +114,7 @@ class ScrolledList(Frame):
         
         self.right_mouse_handle = lambda i, s: None
         self.listbox = list
+        self.set_single_mode()
 
     def remove_line(self, i):
         self.listbox.delete(i)
