@@ -395,7 +395,7 @@ class SentenceAnnotation(Frame):
         if ans == 'yes':
             self.frame_selection.select_event_type()
             self.frame_selection.clear_search_frame()
-        self.set_delete_event_type_mode(False)
+            self.set_search_mode(False)
             
             
     def event_val_handler(self, val_event_ann):
