@@ -94,6 +94,7 @@ class FrameSelection(Frame):
     def load_content(self):
         _thread.start_new_thread(self.load_all_frames_list, ())
         self.all_frames = []
+        self.search_results = []
         self.update_suggestions_list()
         self.update_all_frames_list()
         self.trigger_change_handler(None)
@@ -233,17 +234,41 @@ class FrameSelection(Frame):
             self.triggers_combo.current(i)
             self.trigger_change_handler(None)
 
+
+    def select_event_type(self):
+        index, label = self.all_scroll.get_current_selection()
+        if index >= 0:
+            self.event_type_selection_all(index, label)
+        
+    def view_info_current_frame(self):
+        index, label = self.all_scroll.get_current_selection()
+        if self.search_results:
+            frame = self.search_results[index]
+            if frame:
+                self.load_view_frame_info(frame)
+    
+    def select_next_frame_all_list(self):
+        self.all_scroll.select_next()
+
+    def select_previous_frame_all_list(self):
+        self.all_scroll.select_previous()
+            
     def search_frame(self, search_str):
         if self.all_frames:
             self.all_scroll.clear_list()
+            search_str = search_str.lower()
+            self.search_results = []
             for frame in self.all_frames:
-                if frame.name.find(search_str) != -1:
+                if frame.name.lower().find(search_str) != -1:
                     print('add frame %s' % frame.name)
+                    self.search_results.append(frame)
                     self.all_scroll.add_line(END, frame.name)
 
     def clear_search_frame(self):
+        self.all_scroll.clear_list()
         for frame in self.all_frames:
             self.all_scroll.add_line(END, frame.name)
+        self.search_results = []
 
             
     def load_frames_suggestions(self, trigger_lemma):

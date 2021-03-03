@@ -15,6 +15,32 @@ class ScrolledList(Frame):
         label = self.listbox.get(index)
         return index, label
 
+    def get_current_selection(self):
+        index = self.listbox.curselection()
+        index = index[0] if index else -1
+        label = self.listbox.get(index)
+        return index, label
+
+    def select_next(self):
+        index = self.listbox.curselection()
+        index = index[0] if index else 0
+        print('next index %s' % index)
+        index += 1
+        index = index % self.listbox.size()
+        self.listbox.selection_clear(0,END)
+        self.listbox.selection_set(index)
+        self.listbox.see(index)
+
+    def select_previous(self):
+        index = self.listbox.curselection()
+        index = index[0] if index else 1
+        print('previous index %s' % index)
+        index -= 1
+        index = index % self.listbox.size()
+        self.listbox.selection_clear(0,END)
+        self.listbox.selection_set(index)
+        self.listbox.see(index)
+            
     def config_listbox(self, **configs):
         print(configs)
         self.listbox.config(**configs)
@@ -28,12 +54,13 @@ class ScrolledList(Frame):
         list.config(yscrollcommand=sbar.set)
         sbar.pack(side=RIGHT, fill=Y)
         list.pack(side=LEFT, expand=YES, fill=BOTH)
+        list.config(selectmode=SINGLE)
         pos = 0
         if 'data' in options:
             for label in options['data']:
                 list.insert(pos, label)
                 pos += 1
-                #list.config(selectmode=SINGLE, setgrid=1)
+                #
         
         self.left_mouse_handle = lambda i, s: None
         
@@ -95,13 +122,19 @@ class ScrolledList(Frame):
         self.right_mouse_handle = func
         self.listbox.bind('<B3-Motion>', self.handle_right_mouse)
 
-
+    def set_return_handler(self, func):
+        self.return_key_handler = func
+        self.listbox.bind('<Return>', self.handler_return_key)
 
     def generic_handler_call(self, event, handler_func):
         index, selection = self.handleList(event)
         handler_func(index, selection)
 
 
+    def handler_return_key(self, event):
+        self.generic_handler_call(event, self.handler_return_key)
+
+    
     def handler_ctrl_1(self, event):
         self.ctrl_1_handler(0, '')
 

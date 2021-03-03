@@ -152,7 +152,7 @@ class SentenceAnnotation(Frame):
         return event.state & 0x0008 or event.state & 0x0080
 
     def _is_ctrl_key(self, event):
-        return event.state & 0x0004
+        return event.state & 0x0004 or event.keysym == 'Control_L' or event.keysym == 'Control_R'
 
     def set_search_mode(self, value):
         self.search_mode = value
@@ -171,11 +171,22 @@ class SentenceAnnotation(Frame):
      
         #self.bind_all('<Control-Key-f>', lambda e: Frame.destroy(self.parent))
         if self.is_search_mode():
-            if self._is_ctrl_key(event) and pressed == 'g':
-                print('cancel search mode')
-                self.set_search_mode(False)
-                self.frame_selection.clear_search_frame()
+            if self._is_ctrl_key(event):
+                if  pressed == 'g':
+                    print('cancel search mode')
+                    self.set_search_mode(False)
+                    self.frame_selection.clear_search_frame()
+                elif pressed == 'n':
+                    self.frame_selection.select_next_frame_all_list()
+                elif pressed == 'p':
+                    self.frame_selection.select_previous_frame_all_list()
+                elif pressed == 'i':
+                    self.frame_selection.view_info_current_frame()
+            elif  pressed == 'Return':
+                self.frame_selection.select_event_type()
             else:
+                if pressed == 'underscore':
+                    pressed = '_'
                 self.increment_search_str(pressed)
         elif self._is_alt_key(event):
             if pressed == 'c':
