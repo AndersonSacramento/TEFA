@@ -158,7 +158,7 @@ class FrameSelection(Frame):
             event_ann = self.create_or_update_event_ann(event.id, frame.ID)
             self.btn_remove_type.pack(side=RIGHT)
             if self.event_ann_type_selection_handler:
-                self.event_ann_type_selection_handler(event_ann, frame)
+                self.event_ann_type_selection_handler(event, event_ann, frame)
         
         
     def event_type_selection_all(self, i, s):
@@ -171,7 +171,7 @@ class FrameSelection(Frame):
             event_ann = self.create_or_update_event_ann(event.id, frame.ID)
             self.btn_remove_type.pack(side=RIGHT)
             if self.event_ann_type_selection_handler:
-                self.event_ann_type_selection_handler(event_ann, frame)
+                self.event_ann_type_selection_handler(event, event_ann, frame)
 
     
     def event_view_frame_suggestion(self, i, s):
@@ -198,10 +198,9 @@ class FrameSelection(Frame):
         trigger = self.trigger_var.get()
         print(trigger)
         i = self.triggers_combo.current()
-        
         if self.events and self.events_ann:
-            print('frame selection events_ann')
             event_tbpt = self.events[i]
+            print('frame selection events_ann')
             event_ann = fnutils.find_event_ann(self.events_ann, event_tbpt.id)
             if event_ann:
                 frame = self.selected_frames.get(event_ann.event_fn_id) or fnutils.frame_by_id(event_ann.event_fn_id)
@@ -209,17 +208,17 @@ class FrameSelection(Frame):
                     self.var_event_type.set('Tipo: %s' % frame.name)
                     self.btn_remove_type.pack(side=RIGHT)
                     if self.event_ann_type_selection_handler:
-                        self.event_ann_type_selection_handler(event_ann, frame)
+                        self.event_ann_type_selection_handler(event_tbpt, event_ann, frame)
             else:
                 self.var_event_type.set('Tipo:')
                 self.btn_remove_type.pack_forget()
                 if self.event_ann_type_selection_handler:
-                    self.event_ann_type_selection_handler(None, None)
+                    self.event_ann_type_selection_handler(event_tbpt, None, None)
         else:
             self.var_event_type.set('Tipo:')
             self.btn_remove_type.pack_forget()
             if self.event_ann_type_selection_handler:
-                self.event_ann_type_selection_handler(None, None)
+                self.event_ann_type_selection_handler(None, None, None)
             
         self.suggestions_frames = []
         self.suggestion_scroll.clear_list()

@@ -63,7 +63,7 @@ class FESelection(Frame):
         self.peripheral_selection_list.cycle_selection_fe()
 
     def cycle_selection_ann_fe(self):
-        pass
+        self.fes_selection_list.cycle_selection_fe()
 
     def set_on_fe_selection_handler(self, fn):
         self.on_fe_selection_handler = fn

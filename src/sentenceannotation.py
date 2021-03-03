@@ -89,24 +89,10 @@ class SentenceAnnotation(Frame):
         # btn_preview.pack(side=LEFT, anchor=SE)
         # btn_frame.pack(side=TOP)
         right_frame.pack(side=RIGHT, expand=YES, fill=BOTH)
-
-        self.register_key_bindings()
+        self.parent.bind('<KeyPress>', self.on_keyboard)
 
 
         
-
-        
-    def register_key_bindings(self):
-        parent = self.parent
-
-
-        parent.bind_all('<KeyPress>', self.on_keyboard)
-        parent.bind_all('<Alt-c>', lambda e: self.fe_selection.cycle_selection_core_fe())
-        parent.bind_all('<Alt-p>', lambda e: self.fe_selection.cycle_selection_peripheral_fe())
-        parent.bind_all('<Alt-a>', )
-        
-
-
     def load_view_frame_info(self):
         if self.cur_event_ann:
             frame = fnutils.frame_by_id(self.cur_event_ann.event_fn_id)
@@ -158,24 +144,35 @@ class SentenceAnnotation(Frame):
                 return arg_ann
             
 
-
+    def _is_alt_key(self, event):
+        return event.state & 0x0008 or event.state & 0x0080
+        
     def on_keyboard(self, event):
         pressed = event.char
      
         #self.bind_all('<Control-Key-f>', lambda e: Frame.destroy(self.parent))
-        
-        if pressed == 'a':
-            self.annotate_arg()
-        elif pressed == 'i':
-            self.load_view_frame_info()
-        elif pressed == 'q':
-            Frame.destroy(self.parent)
-        elif pressed == 't':
-            self.frame_selection.cycle_combobox_trigger()
+
+        if self._is_alt_key(event):
+            if pressed == 'c':
+                self.fe_selection.cycle_selection_core_fe()
+            elif pressed == 'p':
+                self.fe_selection.cycle_selection_peripheral_fe()
+            elif pressed == 'a':
+                self.fe_selection.cycle_selection_ann_fe()
+        else:
+            if pressed == 'a':
+                self.annotate_arg()
+            elif pressed == 'i':
+                self.load_view_frame_info()
+            elif pressed == 'q':
+                Frame.destroy(self.parent)
+            elif pressed == 't':
+                self.frame_selection.cycle_combobox_trigger()
 
         return "break"
 
     def set_fe_arg_label(self):
+        print('set_fe_arg_label')
         output = self.fe_selection.get_radio_fe_and_color()
         if output:
             fe, fe_color = output
@@ -247,8 +244,14 @@ class SentenceAnnotation(Frame):
                 print('even_ann_id = %s event_fe_id %s' % (arg_ann.event_ann_id, arg_ann.event_fe_id))
                 fe_color = self.fe_selection.get_fe_color(arg_ann.event_fe_id)
                 self.sentence_text_view.tag_config(tag_name, background=fe_color)
+        
 
-
+    def highlight_event(self, event):
+        if event:
+            self.sentence_text_view.tag_delete('trigger', '1.0', END)
+            self.sentence_text_view.tag_add('trigger','1.%s' % event.start_at, '1.%s' % event.end_at)
+            self.sentence_text_view.tag_config('trigger', font=('times', 16, 'bold'))
+    
     def event_val_handler(self, val_event_ann):
         if self.cur_event_ann:
             val_event_ann.event_ann_id = self.cur_event_ann.id
@@ -265,7 +268,7 @@ class SentenceAnnotation(Frame):
 
     
 
-    def event_type_selection_handler(self, event_ann, frame):
+    def event_type_selection_handler(self, event, event_ann, frame):
         if self.cur_event_ann:
             for arg_ann in self.cur_event_ann.args_ann:
                 tag_name = '%s-%s-%s:%s' % (arg_ann.event_fe_id, self.cur_event_ann.id, arg_ann.start_at, arg_ann.end_at)
@@ -286,6 +289,7 @@ class SentenceAnnotation(Frame):
             #_thread.start_new_thread(self.load_val_ann, (self.options['annotator_id'], event_ann.id)) 
         else:
             self.fe_selection.update_fes()
+        self.highlight_event(event)
         self.load_event_ann_tags()
         self.set_fe_arg_label()
         _thread.start_new_thread(self.save_events_ann, ())

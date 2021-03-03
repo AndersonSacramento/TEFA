@@ -10,6 +10,7 @@ class FESelectedListFrame(Frame):
         self.pack(expand=YES, fill=BOTH)
         self.options = options
         self.fes = {}
+        self.fes_colors = []
         self.make_widgets()
 
 
@@ -21,6 +22,7 @@ class FESelectedListFrame(Frame):
 
     def set_fes(self, fes):
         self.fes = fes
+        self.fes_colors = list(fes.values())
         
     def set_args_fes(self, fes, args_ann, sentence_text):
         self.set_fes(fes)
@@ -31,6 +33,24 @@ class FESelectedListFrame(Frame):
     def get_fes(self):
         return self.fes
 
+    def cycle_selection_fe(self):
+        if self.fes_colors:
+            cur_fe_name = self.var_fes.get()
+            self.var_fes.set(self._get_next_fe_name(cur_fe_name))
+            self.on_press_radio_arg()
+
+    def _get_next_fe_name(self, fe_name):
+        i = 0
+        for fe_color in self.fes_colors:
+            if fe_color.fe.name == fe_name:
+                break
+            i += 1
+        if i+1 < len(self.fes_colors):
+            return self.fes_colors[i+1].fe.name
+        else:
+            return self.fes_colors[0].fe.name
+
+    
     def on_press_radio_arg(self):
         pick = self.var_fes.get()
         if self.on_press_radion_handler:
@@ -44,7 +64,7 @@ class FESelectedListFrame(Frame):
     def get_radio_fe_and_color(self):
         fe_name = self.var_fes.get()
         if self.fes:
-            for fe_color in self.fes.values():
+            for fe_color in self.fes_colors:
                 if fe_color.fe.name == fe_name:
                     return (fe_color.fe, fe_color.color)
             return None
@@ -72,7 +92,7 @@ class FESelectedListFrame(Frame):
         args_fe_count = {fe_id:len([arg_ann for arg_ann in self.args_ann if arg_ann.event_fe_id == fe_id]) for fe_id in self.fes }
         self.imgs = []
         next_row_px_add = 0
-        for i, fe_color in enumerate(self.fes.values()):
+        for i, fe_color in enumerate(self.fes_colors):
             row = Frame(self)
             row_type = Frame(row)
             rad_type = Radiobutton(row_type, text=fe_color.fe.name, value=fe_color.fe.name, variable=self.var_fes, command=self.on_press_radio_arg, bg=fe_color.color)

@@ -199,6 +199,12 @@ def query_events_sentence(sentence):
         events = session.query(EventTBPT).filter_by(sentence_id=sentence.id).all()
     return events
 
+def query_event_tbpt(event_id):
+    event = None
+    with session_scope() as session:
+        event = session.query(EventTBPT).filter_by(id=event_id).first()
+    return event
+
 def query_events_ann(annotator_id, events_tbpt_ids):
     events_ann = []
     with session_scope() as session:
