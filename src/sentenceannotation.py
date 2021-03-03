@@ -25,6 +25,10 @@ class SentenceAnnotation(Frame):
         self.cur_event_ann = None
         self.make_widgets(self.options)
         self.load_content(self.options)
+        self.load_default_modes()
+
+    def load_default_modes(self):
+        self.set_search_mode(False)
 
 
     def middle_button_in_text(self):
@@ -146,19 +150,49 @@ class SentenceAnnotation(Frame):
 
     def _is_alt_key(self, event):
         return event.state & 0x0008 or event.state & 0x0080
-        
+
+    def _is_ctrl_key(self, event):
+        return event.state & 0x0004
+
+    def set_search_mode(self, value):
+        self.search_mode = value
+        self.search_str = ''
+
+    def increment_search_str(self, char):
+        self.search_str += char
+        print('search string: %s' % self.search_str)
+        self.frame_selection.search_frame(self.search_str)
+
+    def is_search_mode(self):
+        return self.search_mode
+    
     def on_keyboard(self, event):
-        pressed = event.char
+        pressed = event.keysym
      
         #self.bind_all('<Control-Key-f>', lambda e: Frame.destroy(self.parent))
-
-        if self._is_alt_key(event):
+        if self.is_search_mode():
+            if self._is_ctrl_key(event) and pressed == 'g':
+                print('cancel search mode')
+                self.set_search_mode(False)
+                self.frame_selection.clear_search_frame()
+            else:
+                self.increment_search_str(pressed)
+        elif self._is_alt_key(event):
             if pressed == 'c':
                 self.fe_selection.cycle_selection_core_fe()
             elif pressed == 'p':
                 self.fe_selection.cycle_selection_peripheral_fe()
             elif pressed == 'a':
                 self.fe_selection.cycle_selection_ann_fe()
+        elif self._is_ctrl_key(event):
+            print('contrl key pressed: %s' % pressed)
+            if pressed == 's':
+                self.set_search_mode(True)
+                print('enter search mode')
+            elif pressed == 'g':
+                print('cancel search mode')
+                self.set_search_mode(False)
+                
         else:
             if pressed == 'a':
                 self.annotate_arg()

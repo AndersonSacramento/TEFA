@@ -232,7 +232,20 @@ class FrameSelection(Frame):
             i = (int(i) + 1) % len(self.events)
             self.triggers_combo.current(i)
             self.trigger_change_handler(None)
-        
+
+    def search_frame(self, search_str):
+        if self.all_frames:
+            self.all_scroll.clear_list()
+            for frame in self.all_frames:
+                if frame.name.find(search_str) != -1:
+                    print('add frame %s' % frame.name)
+                    self.all_scroll.add_line(END, frame.name)
+
+    def clear_search_frame(self):
+        for frame in self.all_frames:
+            self.all_scroll.add_line(END, frame.name)
+
+            
     def load_frames_suggestions(self, trigger_lemma):
         for frame_id in fnutils.query_frameid(trigger_lemma):
             frame = fnutils.frame_by_id(frame_id)
