@@ -284,6 +284,10 @@ def is_event(frame):
 def filter_inheritance(frame):
     return [rel for rel in frame.frameRelations if rel.type.name == 'Inheritance' and frame.name == rel.Child.name]
 
+
+def frame_fes(frame):
+    return [fe for fe in frame.FE.values()]
+
 def filter_core_fes(frame):
     return filter_fes(frame, 'Core')
 

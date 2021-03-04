@@ -34,10 +34,15 @@ class FrameView(Frame):
         """
         self.scroll_text.settext(text)
         
-        
+    def _is_ctrl_key(self, event):
+        return event.state & 0x0004 or event.keysym == 'Control_L' or event.keysym == 'Control_R'
+
+    def _is_alt_key(self, event):
+        return event.state & 0x0008 or event.state & 0x0080
+
 
     def on_keyboard(self, event):
-        pressed = event.char
+        pressed = event.keysym
         if pressed == 'a':
             self.print_all_frame_info()
         elif pressed == 'd':
@@ -57,10 +62,23 @@ class FrameView(Frame):
             self.print_peripheral_fes()
         elif pressed == 'h':
             self.key_bind_help()
-        
+        elif pressed == 'Prior':
+            self.scroll_text.scroll_text_up()
+        elif pressed == 'Next':
+            self.scroll_text.scroll_text_down()            
+        elif pressed == 'Up':
+            self.scroll_text.scroll_text_up()
+        elif pressed == 'Down':
+            self.scroll_text.scroll_text_down()            
+        elif self._is_ctrl_key(event) and pressed == 'v':
+            self.scroll_text.scroll_text_down()
+        elif self._is_alt_key(event) and pressed == 'v':
+            self.scroll_text.scroll_text_up()
         return 'break'
 
 
+
+        
     def print_all_frame_info(self):
         self.scroll_text.settext(str(self.fn_frame))
 

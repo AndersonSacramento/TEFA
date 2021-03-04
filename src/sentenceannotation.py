@@ -301,12 +301,15 @@ class SentenceAnnotation(Frame):
                 else:
                     self.increment_search_str(pressed)
         elif self._is_alt_key(event):
-            if pressed == 'c':
+            if pressed == 'e':
                 self.show_ann_frame()
-                self.fe_selection.cycle_selection_core_fe()
-            elif pressed == 'p':
-                self.show_ann_frame()
-                self.fe_selection.cycle_selection_peripheral_fe()
+                self.fe_selection.cycle_selection_all_fe()
+            # elif pressed == 'c':
+            #     self.show_ann_frame()
+            #     self.fe_selection.cycle_selection_core_fe()
+            # elif pressed == 'p':
+            #     self.show_ann_frame()
+            #     self.fe_selection.cycle_selection_peripheral_fe()
             elif pressed == 'a':
                 self.show_ann_frame()
                 self.fe_selection.cycle_selection_ann_fe()
@@ -574,8 +577,9 @@ class SentenceAnnotation(Frame):
             #self.fe_selection.set_args_ann(event_ann.args_ann)
             self.fe_selection.update_fes()
             self.fe_selection.set_args_ann_fes(fnutils.get_fes_from_args(event_ann, event_ann.args_ann), event_ann.args_ann , self.sentence.text)#get_args_ann_fes(event_ann.id, self.options['annotator_id']))
-            self.fe_selection.set_core_fes(fnutils.filter_core_fes(frame))
-            self.fe_selection.set_peripheral_fes(fnutils.filter_peripheral_fes(frame))
+            self.fe_selection.set_all_fes(fnutils.frame_fes(frame))
+            #self.fe_selection.set_core_fes(fnutils.filter_core_fes(frame))
+            #self.fe_selection.set_peripheral_fes(fnutils.filter_peripheral_fes(frame))
             #_thread.start_new_thread(self.load_val_ann, (self.options['annotator_id'], event_ann.id)) 
         else:
             self.fe_selection.update_fes()
@@ -616,8 +620,9 @@ class SentenceAnnotation(Frame):
             self.fe_selection.update_selections()
             
             self.fe_selection.set_args_ann_fes(fnutils.get_fes_from_args(event_ann, event_ann.args_ann), event_ann.args_ann, self.sentence.text)
-            self.fe_selection.set_core_fes(fnutils.filter_core_fes(frame))
-            self.fe_selection.set_peripheral_fes(fnutils.filter_peripheral_fes(frame))
+            self.fe_selection.set_all_fes(fnutils.frame_fes(frame))
+            #self.fe_selection.set_core_fes(fnutils.filter_core_fes(frame))
+            #self.fe_selection.set_peripheral_fes(fnutils.filter_peripheral_fes(frame))
 
         
     def update_sentence_text(self):

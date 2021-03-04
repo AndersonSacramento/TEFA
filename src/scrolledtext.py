@@ -34,6 +34,16 @@ class ScrolledText(Frame):
     def gettext(self):
         return self.text.get('1.0', END+'-1c')
 
+
+    def scroll_text_up(self):
+        self.scroll_text(-1)
+
+    def scroll_text_down(self):
+        self.scroll_text(1)
+
+    def scroll_text(self, direction):
+        self.text.yview_scroll(direction, UNITS)
+
 if __name__ == '__main__':
     root = Tk()
     if len(sys.argv) > 1:

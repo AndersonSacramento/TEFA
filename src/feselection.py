@@ -26,6 +26,7 @@ class FESelection(Frame):
         self.fes = {}
         self.args_ann = []
         self.arg_val_handler = None
+        options['all_fes'] = {'title': 'FEs não anotados'}
         options['core_fes'] = {'title': 'Elementos Core' }
         options['peripheral_fes'] = {'title': 'Elementos peripheral'}
         options['selected_fes'] = {'title': 'Elementos anotados'}
@@ -59,6 +60,11 @@ class FESelection(Frame):
         if self.selection_frame:
            return  self.selection_frame.get_radio_fe_and_color()
 
+
+
+    def cycle_selection_all_fe(self):
+        self.all_selection_list.cycle_selection_fe()
+        
     def cycle_selection_core_fe(self):
         self.core_selection_list.cycle_selection_fe()
 
@@ -93,7 +99,13 @@ class FESelection(Frame):
             if fe.ID not in self.fes:
                 fes_dict[fe.ID] = self._get_fe_color(fe)
                 self.fes[fe.ID] = fes_dict[fe.ID]
-                
+
+
+    def set_all_fes(self, fes):
+        all_fes = {}
+        self._set_fes(fes, all_fes)
+        self.all_selection_list.set_fes(all_fes)
+
     def set_core_fes(self, fes):
         core_fes = {}
         self._set_fes(fes, core_fes)
@@ -116,19 +128,23 @@ class FESelection(Frame):
     def make_widgets(self):
         not_selected_row = Frame(self)
 
-        self.core_selection_list = FEListSelectionFrame(self.options['core_fes'], parent=not_selected_row)
-        self.peripheral_selection_list = FEListSelectionFrame(self.options['peripheral_fes'], parent=not_selected_row)
+        self.all_selection_list = FEListSelectionFrame(self.options['all_fes'], parent=not_selected_row)
         
-        self.core_selection_list.pack(side=TOP, expand=YES, fill=BOTH)
-        self.peripheral_selection_list.pack(side=TOP, expand=YES, fill=BOTH)
+        #self.core_selection_list = FEListSelectionFrame(self.options['core_fes'], parent=not_selected_row)
+        #self.peripheral_selection_list = FEListSelectionFrame(self.options['peripheral_fes'], parent=not_selected_row)
+
+        self.all_selection_list.pack(side=TOP, expand=YES, fill=BOTH)
+        #self.core_selection_list.pack(side=TOP, expand=YES, fill=BOTH)
+        #self.peripheral_selection_list.pack(side=TOP, expand=YES, fill=BOTH)
         
 
         self.fes_selection_list = FESelectedListFrame(self.options['selected_fes'], parent=self)
         self.fes_selection_list.pack(side=LEFT, expand=YES, fill=BOTH)
         not_selected_row.pack(side=RIGHT, expand=YES, fill=BOTH)
 
-        self.core_selection_list.set_on_press_radio_handler(self.on_fe_selection)
-        self.peripheral_selection_list.set_on_press_radio_handler(self.on_fe_selection)
+        self.all_selection_list.set_on_press_radio_handler(self.on_fe_selection)
+        #self.core_selection_list.set_on_press_radio_handler(self.on_fe_selection)
+        #self.peripheral_selection_list.set_on_press_radio_handler(self.on_fe_selection)
         self.fes_selection_list.set_on_press_radio_handler(self.on_fe_selection)
 
         
@@ -148,13 +164,17 @@ class FESelection(Frame):
         
     def update_selections(self):
         self.clear_args_fes_rows()
-        self.clear_core_fes_rows()
-        self.clear_peripheral_fes_rows()
+        #self.clear_core_fes_rows()
+        #self.clear_peripheral_fes_rows()
+        self.clear_all_fes_rows()
         self.fes = {}
         
     def clear_args_fes_rows(self):
         self.fes_selection_list.clear_fes_rows()
 
+    def clear_all_fes_rows(self):
+        self.all_selection_list.clear_fes_rows()
+        
     def clear_core_fes_rows(self):
         self.core_selection_list.clear_fes_rows()
         
