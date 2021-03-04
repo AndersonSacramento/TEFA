@@ -190,6 +190,7 @@ class SentenceAnnotation(Frame):
             self.sentence_text_view.tag_add(SEL, cur_index, cur_index)
         else:
             self.sentence_text_view.tag_add(SEL, "1.0", "1.0")
+        self.show_ann_frame()
             
             
 
@@ -559,6 +560,8 @@ class SentenceAnnotation(Frame):
     def show_ann_frame(self):
         self.arg_frame.pack_forget()
         self.ann_frame.pack(side=TOP, expand=YES, fill=X)
+        self.set_fe_arg_label()
+            
         
     def start_delete_arg_mode(self):
         self.ann_frame.pack_forget()
@@ -643,6 +646,7 @@ class SentenceAnnotation(Frame):
             self.arg_ann_remove_handler(to_delete_arg_ann)
             self.load_event_args_ann_tags()
             self.set_delete_arg_mode(False)
+            self.stop_delete_arg_mode()
         
     # def ask_delete_cur_event_type(self):
     #     ans = askquestion('Pergunta', 'Você confirma a remoção do tipo do evento?', parent=self)
