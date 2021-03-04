@@ -80,51 +80,71 @@ class FESelectedListFrame(Frame):
         
         self.var_fes = StringVar()
 
-        if self.fes:
-            #self.var_fes.set(self.fes_names[0])
-            
-            self.canv.config(scrollregion=(0, 0, 150, 30+(len(list(self.fes.values())) + len(self.args_ann))*80))
+
 
         self.fes_selection_vars = []
 
         #fes_colors = [fe_color.color for fe_color in self.fes.values()]
 
         args_fe_count = {fe_id:len([arg_ann for arg_ann in self.args_ann if arg_ann.event_fe_id == fe_id]) for fe_id in self.fes }
+        print('args_fe_count: %s' % args_fe_count)
         self.imgs = []
         next_row_px_add = 0
+        bottom = 0
+
+        if self.fes:
+            scrollable_frame = Frame(self.canvas, width=150)
+            scrollable_frame.bind(
+                "<Configure>",
+                lambda e: self.canvas.configure(
+                    scrollregion=self.canvas.bbox("all")
+                )
+            )
+            
+        
         for i, fe_color in enumerate(self.fes_colors):
-            row = Frame(self)
+            row = Frame(scrollable_frame)
             row_type = Frame(row)
             rad_type = Radiobutton(row_type, text=fe_color.fe.name, value=fe_color.fe.name, variable=self.var_fes, command=self.on_press_radio_arg, bg=fe_color.color)
             rad_type.pack(side=TOP, anchor=NW)
             row_type.pack(side=TOP, expand=YES, fill=X,  anchor=NW)
             j = 0
-            row_arg = Frame(row)
-            row_arg.config(width=140)
+            #row_arg = Frame(row)
             for arg_ann in [arg_ann for arg_ann in self.args_ann if arg_ann.event_fe_id == fe_color.fe.ID]:
                 arg_text = self.sentence_text[arg_ann.start_at:arg_ann.end_at]
-                row_text = Frame(row_arg)
-                msg_arg = Message(row_text,text=arg_text)
-                msg_arg.config(font=('times', 12))
-                msg_arg.config(width=250)
-                msg_arg.pack(side=LEFT, expand=YES, anchor=NW)
+                row_text = Frame(row)
 
+                txt_arg = Text(row_text, font=('times', 12), height=2, width=30)
+                
+                txt_arg.delete('1.0', END)
+                txt_arg.insert('1.0', arg_text)
+                
                 img = PhotoImage(file="imgs/remove_icon_18.gif")
                 self.imgs.append(img)
                 btn_remove_arg = Button(row_text, image=img, command=lambda arg_ann=arg_ann: self.remove_event_arg_handler(arg_ann))
-                btn_remove_arg.pack(side=RIGHT)
+                btn_remove_arg.pack(side=RIGHT, expand=YES)
+                txt_arg.pack(side=LEFT, expand=YES, fill=X, anchor=NW)
 
                 row_text.pack(side=TOP, expand=YES, fill=X,  anchor=NW)
                 
                 print('make message: %s \n%d' % (arg_text, j))
                 j += 1
-            row_arg.pack(side=TOP, expand=YES, fill=X,  anchor=NW)
-            row.config(width=300)
+            #row_arg.pack(side=TOP, expand=YES, fill=X,  anchor=NW)
             row.pack(expand=YES, fill=X)
-            self.rows_ids.append(self.canv.create_window(10,((i+1) * 100) + (args_fe_count[fe_color.fe.ID]-1)*50 +next_row_px_add, anchor=W, window=row, width=300))
-            next_row_px_add = (args_fe_count[fe_color.fe.ID]-1)*50
+        if self.fes:
+            #width = self.canvas.bbox()[2] - self.canvas.bbox()[0]
+            print('canvas width %s' % self.canvas.winfo_width())
+            self.rows_ids.append(self.canvas.create_window((0,0),  width=self.canvas.winfo_width(), window=scrollable_frame, anchor='nw'))
+        self.canvas.config(yscrollcommand=self.sbar.set)
 
+            #(i+1) * 80)
+            #print('next pos (%d,%d)' % (10, ((i+1)*20) + next_row_px_add))
+            #self.rows_ids.append(self.canvas.create_window((10, ((i+1)*50) + next_row_px_add), anchor=W, window=row))#, width=300)) #(args_fe_count[fe_color.fe.ID]-1)*50
+            #bottom += ((i+1)*50) + next_row_px_add
+            #next_row_px_add = (args_fe_count[fe_color.fe.ID])*20
 
+        #if self.fes:
+        #    self.canvas.config(scrollregion=(0, 0, 150, bottom))
 
     # def create_fes_radios_list(self):
     #     self.clear_fes_rows()
@@ -133,7 +153,7 @@ class FESelectedListFrame(Frame):
     #     self.fes_names = [fe.name for fe in self.fes]
     #     if self.fes_names:
     #         self.var_fes.set(self.fes_names[0])
-    #         self.canv.config(scrollregion=(0, 0, 150, 30+len(self.fes)*30))
+    #         self.canvas.config(scrollregion=(0, 0, 150, 30+len(self.fes)*30))
 
     #     self.fes_selection_vars = []
 
@@ -144,13 +164,13 @@ class FESelectedListFrame(Frame):
     #         rad_type.pack(side=TOP)
     #         row_type.pack(side=TOP, expand=YES, fill=X)
             
-    #         self.rows_ids.append(self.canv.create_window(10,30+(i*30), anchor=W, window=row))
+    #         self.rows_ids.append(self.canvas.create_window(10,30+(i*30), anchor=W, window=row))
 
 
 
     def clear_fes_rows(self):
         for row_id in self.rows_ids:
-            self.canv.delete(row_id)
+            self.canvas.delete(row_id)
 
     
     
@@ -160,17 +180,17 @@ class FESelectedListFrame(Frame):
         lab.pack(side=TOP, fill=X)
         canv = Canvas(self, bg='white', relief=SUNKEN)
         canv.config(highlightthickness=0)
-        canv.config(width=150, height=100)
+        #canv.config(width=150)
         # canv.config(scrollregion=(0, 0, 300, 200))
 
 
-        sbar = Scrollbar(self)
-        sbar.config(command=canv.yview)
-        canv.config(yscrollcommand=sbar.set)
-        sbar.pack(side=RIGHT, fill=Y)
+        self.sbar = Scrollbar(self)
+        self.sbar.config(command=canv.yview)
+        canv.config(yscrollcommand=self.sbar.set)
+        self.sbar.pack(side=RIGHT, fill=Y)
         canv.pack(side=LEFT, expand=YES, fill=BOTH)
 
-        self.canv = canv
+        self.canvas = canv
         self.rows_ids = []
         self.create_fes_radios_list()
 
