@@ -37,6 +37,7 @@ class SentenceAnnotation(Frame):
         self.set_list_mode(False)
         self.to_view_arg_ann = None
         self.set_list_args_mode(False)
+        self.set_select_text_mode(False)
 
     def middle_button_in_text(self):
         self.sentence_text_view.edit_undo()
@@ -181,6 +182,90 @@ class SentenceAnnotation(Frame):
     def _is_ctrl_key(self, event):
         return event.state & 0x0004 or event.keysym == 'Control_L' or event.keysym == 'Control_R'
 
+
+
+    def start_select_text_mode(self):
+        cur_index = self.sentence_text_view.index(INSERT)
+        if cur_index:
+            self.sentence_text_view.tag_add(SEL, cur_index, cur_index)
+        else:
+            self.sentence_text_view.tag_add(SEL, "1.0", "1.0")
+            
+            
+
+    def stop_select_text_mode(self):
+        self.sentence_text_view.tag_remove(SEL, '1.0', END)
+        self.sentence_text_view.tag_delete(SEL, '1.0', END)
+    
+    def _move_by_char_step(self, step_fn):
+        cur_index = self.sentence_text_view.index(INSERT)
+        end_index = self.sentence_text_view.index('1.end')
+        end_pos = int(end_index.split('.')[1])
+        print('cur_index %s end_pos %s' % (cur_index, end_pos))
+        if cur_index and end_pos != 0:
+            cur_pos = (int(cur_index.split('.')[1]) % end_pos)
+            cur_pos = (cur_pos + step_fn(cur_pos)) % end_pos
+            self.sentence_text_view.mark_set(INSERT, '%s.%s' % (cur_index.split('.')[0], cur_pos))
+        else:
+            self.sentence_text_view.mark_set(INSERT, '1.0')
+            cur_pos = 0
+        self.sentence_text_view.focus_set()
+        self.sentence_text_view.see(INSERT)
+        if self.is_select_mode():
+            before_pos = (int(cur_index.split('.')[1]) % end_pos)
+            if cur_pos > before_pos:
+                try:
+                    sel_first = self.sentence_text_view.index(SEL_FIRST)
+                    sel_last = self.sentence_text_view.index(SEL_LAST)
+                except:
+                    sel_first = '1.%s' % ((int(cur_index.split('.')[1])) % end_pos)
+                    sel_last = '1.%s' % ((int(cur_index.split('.')[1])) % end_pos)
+                cur_index = self.sentence_text_view.index(INSERT)
+                if sel_last > cur_index > sel_first:
+                    self.sentence_text_view.tag_remove(SEL, '1.0', END)
+                    self.sentence_text_view.tag_delete(SEL, '1.0', END)
+                    self.sentence_text_view.tag_add(SEL, cur_index, sel_last)
+                else:
+                     self.sentence_text_view.tag_add(SEL, sel_first, cur_index)
+            else:
+                try:
+                    sel_last = self.sentence_text_view.index(SEL_LAST)
+                    sel_first = self.sentence_text_view.index(SEL_FIRST)
+                except:
+                    sel_last = '1.%s' % ((int(cur_index.split('.')[1])) % end_pos)
+                    sel_first = '1.%s' % ((int(cur_index.split('.')[1])) % end_pos)
+                cur_index = self.sentence_text_view.index(INSERT)
+                if  sel_last > cur_index > sel_first:
+                    self.sentence_text_view.tag_remove(SEL, '1.0', END)
+                    self.sentence_text_view.tag_delete(SEL, '1.0', END)
+                    self.sentence_text_view.tag_add(SEL, sel_first, cur_index)
+                else:
+                    self.sentence_text_view.tag_add(SEL, cur_index, sel_last)
+                
+
+        
+    def _move_by_char_forward(self):
+        self._move_by_char_step(lambda cur_pos: 1)
+        
+    def _move_by_char_backward(self):
+        self._move_by_char_step(lambda cur_pos: -1)
+
+    def _move_to_sentence_start(self):
+        self.sentence_text_view.mark_set(INSERT, '1.0')
+        self.sentence_text_view.focus_set()
+        self.sentence_text_view.see(INSERT)
+
+    def _move_to_sentence_end(self):
+        self.sentence_text_view.mark_set(INSERT, END)
+        self.sentence_text_view.focus_set()
+        self.sentence_text_view.see(INSERT)
+
+    def set_select_text_mode(self, value):
+        self.select_text_mode = value
+
+    def is_select_mode(self):
+        return self.select_text_mode
+    
     def set_list_mode(self, value):
         self.list_mode = value
 
@@ -238,7 +323,32 @@ class SentenceAnnotation(Frame):
         pressed = event.keysym
      
         #self.bind_all('<Control-Key-f>', lambda e: Frame.destroy(self.parent))
-        if self.is_list_mode():
+
+        if self.is_select_mode():
+            if self.is_cancel_cmd(event):
+                self.set_select_text_mode(False)
+                self.stop_select_text_mode()
+            elif self._is_ctrl_key(event):
+                if pressed == 'f':
+                    self._move_by_char_forward()
+                elif pressed == 'b':
+                    self._move_by_char_backward()
+                elif pressed == 'a':
+                    self._move_to_sentence_start()
+                elif pressed == 'e':
+                    self._move_to_sentence_end()
+            elif self._is_alt_key(event):
+                if  pressed == 'e':
+                    self.show_ann_frame()
+                    self.fe_selection.cycle_selection_all_fe()
+                elif pressed == 'a':
+                    self.show_ann_frame()
+                    self.fe_selection.cycle_selection_ann_fe()
+            elif pressed == 'a':
+                self.annotate_arg()
+                self.set_select_text_mode(False)
+                self.stop_select_text_mode()
+        elif self.is_list_mode():
             if pressed == 'a' or (self._is_ctrl_key(event) and pressed == 'a'):
                 self.set_list_mode(False)
                 self.set_list_args_mode(True)
@@ -326,7 +436,17 @@ class SentenceAnnotation(Frame):
                 self.set_delete_mode(True)
             elif pressed == 'l':
                 self.set_list_mode(True)
-                
+            elif pressed == 'f':
+                self._move_by_char_forward()
+            elif pressed == 'b':
+                self._move_by_char_backward()
+            elif pressed == 'a':
+                self._move_to_sentence_start()
+            elif pressed == 'e':
+                self._move_to_sentence_end()
+            elif pressed == 'space':
+                self.set_select_text_mode(True)
+                self.start_select_text_mode()
         else:
             if pressed == 'a':
                 self.annotate_arg()
@@ -467,7 +587,11 @@ class SentenceAnnotation(Frame):
             args_ann = self.cur_event_ann.args_ann
             len_args = len(args_ann)
             if self.to_delete_arg_ann:
-                index = args_ann.index(self.to_delete_arg_ann)
+                try:
+                    index = args_ann.index(self.to_delete_arg_ann)
+                except ValueError:
+                    self.to_delete_arg_ann = args_ann[0]
+                    return
                 self.to_delete_arg_ann = args_ann[step_fn(index) % len_args]
             else:
                 self.to_delete_arg_ann = args_ann[0]
