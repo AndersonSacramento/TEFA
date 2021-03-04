@@ -34,6 +34,9 @@ class SentenceAnnotation(Frame):
         self.set_delete_mode(False)
         self.set_delete_arg_mode(False)
         self.set_delete_event_type_mode(False)
+        self.set_list_mode(False)
+        self.to_view_arg_ann = None
+        self.set_list_args_mode(False)
 
     def middle_button_in_text(self):
         self.sentence_text_view.edit_undo()
@@ -51,7 +54,26 @@ class SentenceAnnotation(Frame):
         self.sentence_text_view = text
 
 
-        ann_frame = Frame(left_frame)
+        mode_frame = Frame(left_frame)
+        mode_frame.pack(side=TOP, expand=YES, fill=X)
+        self.mode_frame = mode_frame
+
+        arg_frame = Frame(mode_frame)
+        self.fe_arg_list_var = StringVar()
+        label_arg_fe = Label(arg_frame, text='', textvariable=self.fe_arg_list_var)
+        label_arg_fe.pack(side=LEFT, expand=YES)
+        self.label_arg_fe = label_arg_fe
+
+        txt_arg_fe_def = Text(arg_frame, font=('times', 12), height=2)
+        txt_arg_fe_def.pack(side=LEFT, expand=YES, fill=X)
+        txt_arg_fe_def.bind('<KeyPress>', lambda e: self.on_keyboard(e))
+        self.txt_arg_fe_def = txt_arg_fe_def
+
+        arg_frame.pack_forget()
+        self.arg_frame = arg_frame
+        
+        
+        ann_frame = Frame(mode_frame)
         self.fe_arg_var = StringVar()
         label_fe =  Label(ann_frame, text='', textvariable=self.fe_arg_var)
         label_fe.pack(side=LEFT, expand=YES)
@@ -67,8 +89,8 @@ class SentenceAnnotation(Frame):
 
         btn_tag = Button(ann_frame, text='Anotar', command=self.annotate_arg)
         btn_tag.pack(side=RIGHT, expand=YES)
-        ann_frame.pack(side=TOP, expand=YES, fill=X)
-        
+        ann_frame.pack_forget()
+        self.ann_frame = ann_frame
 
         self.fe_selection = FESelection(options, parent=left_frame)
         self.fe_selection.pack(side=TOP, anchor=SW)
@@ -159,6 +181,18 @@ class SentenceAnnotation(Frame):
     def _is_ctrl_key(self, event):
         return event.state & 0x0004 or event.keysym == 'Control_L' or event.keysym == 'Control_R'
 
+    def set_list_mode(self, value):
+        self.list_mode = value
+
+    def is_list_mode(self):
+        return self.list_mode
+    
+    def set_list_args_mode(self, value):
+        self.list_args_mode = value
+
+    def is_list_args_mode(self):
+        return self.list_args_mode
+    
     def set_search_mode(self, value):
         self.search_mode = value
         self.search_str = ''
@@ -194,18 +228,38 @@ class SentenceAnnotation(Frame):
         
     def is_search_mode(self):
         return self.search_mode
+
+    def is_cancel_cmd(self, event):
+        pressed = event.keysym
+        return  pressed == 'g' or (self._is_ctrl_key(event) and pressed == 'g')
+
     
     def on_keyboard(self, event):
         pressed = event.keysym
      
         #self.bind_all('<Control-Key-f>', lambda e: Frame.destroy(self.parent))
-        if self.is_delete_mode():
+        if self.is_list_mode():
+            if pressed == 'a' or (self._is_ctrl_key(event) and pressed == 'a'):
+                self.set_list_mode(False)
+                self.set_list_args_mode(True)
+                self.start_list_args_mode()
+            elif self.is_cancel_cmd(event):
+                self.set_list_mode(False)
+        elif self.is_list_args_mode():
+            if pressed == 'n' or (self._is_ctrl_key(event) and pressed == 'n'):
+                self.set_next_arg_ann_to_view()
+            elif pressed == 'p' or (self._is_ctrl_key(event) and pressed == 'p'):
+                self.set_previous_arg_ann_to_view()
+            elif self.is_cancel_cmd(event):
+                self.stop_list_args_mode()
+                self.set_list_args_mode(False)
+        elif self.is_delete_mode():
             if pressed == 'g':
                 self.set_delete_mode(False)
             elif pressed == 'a':
                 self.set_delete_mode(False)
                 self.set_delete_arg_mode(True)
-                self.set_next_arg_ann_to_delete()
+                self.start_delete_arg_mode()
             elif pressed == 't':
                 self.set_delete_mode(False)
                 #self.set_delete_event_type_mode(True)
@@ -217,7 +271,7 @@ class SentenceAnnotation(Frame):
                 self.ask_delete_cur_arg()
             elif pressed == 'g'or (self._is_ctrl_key(event) and pressed == 'g'):
                 self.set_delete_arg_mode(False)
-                self.load_event_args_ann_tags()
+                self.stop_delete_arg_mode()
             elif pressed == 'n' or (self._is_ctrl_key(event) and pressed == 'n'):
                 self.set_next_arg_ann_to_delete()
             elif pressed == 'p' or (self._is_ctrl_key(event) and pressed == 'p'):
@@ -248,10 +302,13 @@ class SentenceAnnotation(Frame):
                     self.increment_search_str(pressed)
         elif self._is_alt_key(event):
             if pressed == 'c':
+                self.show_ann_frame()
                 self.fe_selection.cycle_selection_core_fe()
             elif pressed == 'p':
+                self.show_ann_frame()
                 self.fe_selection.cycle_selection_peripheral_fe()
             elif pressed == 'a':
+                self.show_ann_frame()
                 self.fe_selection.cycle_selection_ann_fe()
         elif self._is_ctrl_key(event):
             print('contrl key pressed: %s' % pressed)
@@ -264,6 +321,8 @@ class SentenceAnnotation(Frame):
             elif pressed == 'd':
                 print('delete mode')
                 self.set_delete_mode(True)
+            elif pressed == 'l':
+                self.set_list_mode(True)
                 
         else:
             if pressed == 'a':
@@ -277,6 +336,15 @@ class SentenceAnnotation(Frame):
 
         return "break"
 
+
+    def set_fe_arg_ann_label(self, arg_ann):
+        fe_color = self.fe_selection.get_fe_color(arg_ann.event_fe_id)
+        fe = self.fe_selection.get_arg_fe(arg_ann.event_fe_id)
+        self.fe_arg_list_var.set(fe.name)
+        self.txt_arg_fe_def.delete('1.0', END)
+        self.txt_arg_fe_def.insert('1.0', fe.definition)
+        self.label_arg_fe.config(background=fe_color)
+    
     def set_fe_arg_label(self):
         print('set_fe_arg_label')
         output = self.fe_selection.get_radio_fe_and_color()
@@ -365,6 +433,32 @@ class SentenceAnnotation(Frame):
             self.sentence_text_view.tag_config('trigger', font=('times', 16, 'bold'))
 
 
+    def show_ann_frame(self):
+        self.arg_frame.pack_forget()
+        self.ann_frame.pack(side=TOP, expand=YES, fill=X)
+        
+    def start_delete_arg_mode(self):
+        self.ann_frame.pack_forget()
+        self.arg_frame.pack(side=TOP, expand=YES, fill=X)
+        self.set_next_arg_ann_to_delete()
+
+
+    def start_list_args_mode(self):
+        self.ann_frame.pack_forget()
+        self.arg_frame.pack(side=TOP, expand=YES, fill=X)
+        self.set_next_arg_ann_to_view()
+
+    def stop_list_args_mode(self):
+        self.arg_frame.pack_forget()
+        self.to_view_arg_ann = None
+        self.load_event_args_ann_tags()
+        
+    def stop_delete_arg_mode(self):
+        self.arg_frame.pack_forget()
+        self.to_delete_arg_ann = None
+        self.load_event_args_ann_tags()
+        
+
     def _set_step_arg_ann_to_delete(self, step_fn):
         if self.cur_event_ann and self.cur_event_ann.args_ann:
             args_ann = self.cur_event_ann.args_ann
@@ -377,6 +471,7 @@ class SentenceAnnotation(Frame):
 
             self.delete_all_args_ann_tags()
             self.load_arg_ann_tag(self.to_delete_arg_ann)
+            self.set_fe_arg_ann_label(self.to_delete_arg_ann)
         else:
             self.set_delete_arg_mode(False)
 
@@ -386,6 +481,33 @@ class SentenceAnnotation(Frame):
     def set_previous_arg_ann_to_delete(self):
         self._set_step_arg_ann_to_delete(lambda i: i-1)
 
+
+        
+
+    def _set_step_arg_ann_to_view(self, step_fn):
+        if self.cur_event_ann and self.cur_event_ann.args_ann:
+            args_ann = self.cur_event_ann.args_ann
+            len_args = len(args_ann)
+            if self.to_view_arg_ann:
+                index = args_ann.index(self.to_view_arg_ann)
+                self.to_view_arg_ann = args_ann[step_fn(index) % len_args]
+            else:
+                self.to_view_arg_ann = args_ann[0]
+
+            self.delete_all_args_ann_tags()
+            self.load_arg_ann_tag(self.to_view_arg_ann)
+            self.set_fe_arg_ann_label(self.to_view_arg_ann)
+        else:
+            self.set_delete_arg_mode(False)
+
+    def set_next_arg_ann_to_view(self):
+        self._set_step_arg_ann_to_view(lambda i: i+1)
+
+    def set_previous_arg_ann_to_view(self):
+        self._set_step_arg_ann_to_view(lambda i: i-1)
+
+            
+            
     def ask_delete_cur_arg(self, to_delete_arg_ann=None):
         ans = askquestion('Pergunta', 'Você confirma a remoção do argumento?', parent=self)
         if ans == 'yes':

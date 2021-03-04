@@ -56,7 +56,10 @@ class FEListSelectionFrame(Frame):
             return None
 
     def get_fe_color(self, fe_id):
-        return self.fes[fe_id].color
+        return self.fes.get(fe_id).color
+
+    def get_fe(self, fe_id):
+        return self.fes.get(fe_id).fe
 
     def create_fes_radios_list(self):
         self.clear_fes_rows()

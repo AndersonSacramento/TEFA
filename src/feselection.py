@@ -52,6 +52,9 @@ class FESelection(Frame):
         return self.fes_selection_list.get_fe_color(fe_id)
 
 
+    def get_arg_fe(self, fe_id):
+        return self.fes_selection_list.get_fe(fe_id)
+    
     def get_radio_fe_and_color(self):
         if self.selection_frame:
            return  self.selection_frame.get_radio_fe_and_color()
