@@ -72,7 +72,7 @@ class SentenceAnnotation(Frame):
 
         self.fe_selection = FESelection(options, parent=left_frame)
         self.fe_selection.pack(side=TOP, anchor=SW)
-        self.fe_selection.set_arg_ann_remove_handler(self.arg_ann_remove_handler)
+        self.fe_selection.set_arg_ann_remove_handler(self.ask_delete_cur_arg)#self.arg_ann_remove_handler)
         self.fe_selection.set_on_fe_selection_handler(self.set_fe_arg_label)
         left_frame.pack(side=LEFT, expand=YES, fill=BOTH)
         #self.fe_selection.set_arg_val_handler(self.arg_val_handler)
@@ -83,6 +83,7 @@ class SentenceAnnotation(Frame):
         self.frame_selection.pack(side=TOP, anchor=NE)
         self.frame_selection.set_event_ann_type_selection_handler(self.event_type_selection_handler)
         self.frame_selection.set_event_ann_type_remove_handler(self.event_ann_type_remove_handler)
+        self.frame_selection.set_binding_key_press(lambda e: self.on_keyboard(e))
         #self.frame_selection.set_event_val_handler(self.event_val_handler)
         
 
@@ -208,7 +209,9 @@ class SentenceAnnotation(Frame):
             elif pressed == 't':
                 self.set_delete_mode(False)
                 #self.set_delete_event_type_mode(True)
-                self.ask_delete_cur_event_type()
+                self.frame_selection.remove_event_type_handler()
+                self.set_delete_event_type_mode(False)
+                #self.ask_delete_cur_event_type()
         elif self.is_delete_arg_mode():
             if pressed == 'Return':
                 self.ask_delete_cur_arg()
@@ -232,7 +235,10 @@ class SentenceAnnotation(Frame):
                 elif pressed == 'i':
                     self.frame_selection.view_info_current_frame()
             elif  pressed == 'Return':
-                self.ask_change_cur_event_type()
+                if self.frame_selection.select_event_type():
+                    self.frame_selection.clear_search_frame()
+                    self.set_search_mode(False)
+                #self.ask_change_cur_event_type()
             else:
                 if pressed == 'underscore':
                     pressed = '_'
@@ -298,6 +304,9 @@ class SentenceAnnotation(Frame):
             output = self.fe_selection.get_radio_fe_and_color()
             if output:
                 fe, fe_color = output
+            else:
+                return
+                # fe can be None ?
             if self.cur_event_ann:
 
                 arg_ann = self._find_arg_ann(self.cur_event_ann.args_ann, fe.ID, int(start_at), int(end_at))
@@ -377,25 +386,31 @@ class SentenceAnnotation(Frame):
     def set_previous_arg_ann_to_delete(self):
         self._set_step_arg_ann_to_delete(lambda i: i-1)
 
-    def ask_delete_cur_arg(self):
+    def ask_delete_cur_arg(self, to_delete_arg_ann=None):
         ans = askquestion('Pergunta', 'Você confirma a remoção do argumento?', parent=self)
         if ans == 'yes':
-            self.arg_ann_remove_handler(self.to_delete_arg_ann)
+            if not to_delete_arg_ann:
+               to_delete_arg_ann = self.to_delete_arg_ann
+            self.arg_ann_remove_handler(to_delete_arg_ann)
             self.load_event_args_ann_tags()
             self.set_delete_arg_mode(False)
         
-    def ask_delete_cur_event_type(self):
-        ans = askquestion('Pergunta', 'Você confirma a remoção do tipo do evento?', parent=self)
-        if ans == 'yes':
-            self.frame_selection.remove_event_type_handler()
-        self.set_delete_event_type_mode(False)
+    # def ask_delete_cur_event_type(self):
+    #     ans = askquestion('Pergunta', 'Você confirma a remoção do tipo do evento?', parent=self)
+    #     if ans == 'yes':
+    #         self.frame_selection.remove_event_type_handler()
+    #     self.set_delete_event_type_mode(False)
 
-    def ask_change_cur_event_type(self):
-        ans = askquestion('Pergunta', 'Você confirma a mudança do tipo do evento?', parent=self)
-        if ans == 'yes':
-            self.frame_selection.select_event_type()
-            self.frame_selection.clear_search_frame()
-            self.set_search_mode(False)
+    # def ask_change_cur_event_type(self):
+    #     if self.cur_event_ann:
+    #         ans = askquestion('Pergunta', 'Você confirma a mudança do tipo do evento?', parent=self)
+    #         if ans == 'yes':
+                
+    #             self.frame_selection.clear_search_frame()
+    #             self.set_search_mode(False)
+    #     else:
+    #         self.frame_selection.select_event_type()
+    #         self.frame_selection.clear_search_frame()
             
             
     def event_val_handler(self, val_event_ann):
@@ -424,7 +439,7 @@ class SentenceAnnotation(Frame):
         if self.cur_event_ann:
             for arg_ann in self.cur_event_ann.args_ann:
                 self.delete_arg_ann_tag(arg_ann)
-                
+    
     def event_type_selection_handler(self, event, event_ann, frame):
         self.delete_all_args_ann_tags()
             #if event_ann and self.cur_event_ann.event_fn_id != event_ann.event_fn_id:
