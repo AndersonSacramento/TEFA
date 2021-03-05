@@ -38,6 +38,9 @@ class SentenceAnnotation(Frame):
         self.to_view_arg_ann = None
         self.set_list_args_mode(False)
         self.set_select_text_mode(False)
+        self.set_event_type_mode(False)
+        self.set_event_type_suggestion_mode(False)
+        self.set_event_type_all_mode(False)
 
     def middle_button_in_text(self):
         self.sentence_text_view.edit_undo()
@@ -302,6 +305,24 @@ class SentenceAnnotation(Frame):
     def is_delete_mode(self):
         return self.delete_mode
 
+    def set_event_type_suggestion_mode(self, value):
+        self.event_type_suggestion_mode = value
+
+    def is_event_type_suggestion_mode(self):
+        return self.event_type_suggestion_mode
+
+    def set_event_type_all_mode(self, value):
+        self.event_type_all_mode = value
+
+    def is_event_type_all_mode(self):
+        return self.event_type_all_mode
+    
+    def set_event_type_mode(self, value):
+        self.event_type_mode = value
+
+    def is_event_type_mode(self):
+        return self.event_type_mode
+    
     def increment_search_str(self, char):
         self.search_str += char
         print('search string: %s' % self.search_str)
@@ -411,6 +432,35 @@ class SentenceAnnotation(Frame):
                     self.decrement_search_str()
                 else:
                     self.increment_search_str(pressed)
+        elif self.is_event_type_mode():
+            if pressed == 's':
+                self.set_event_type_mode(False)
+                self.set_event_type_suggestion_mode(True)
+            elif pressed == 'a':
+                self.set_event_type_mode(False)
+                self.set_event_type_all_mode(True)
+            elif self.is_cancel_cmd(event):
+                self.set_event_type_mode(False)
+        elif self.is_event_type_suggestion_mode():
+            if pressed == 'n':
+                self.frame_selection.select_next_frame_suggestion_list()
+            elif pressed == 'p':
+                self.frame_selection.select_previous_frame_suggestion_list()
+            elif self.is_cancel_cmd(event):
+                self.set_event_type_suggestion_mode(False)
+            elif pressed == 'Return':
+                if self.frame_selection.select_suggestion_event_type():
+                    self.set_event_type_suggestion_mode(False)
+        elif self.is_event_type_all_mode():
+            if pressed == 'n':
+                self.frame_selection.select_next_frame_all_list()
+            elif pressed == 'p':
+                self.frame_selection.select_previous_frame_all_list()
+            elif self.is_cancel_cmd(event):
+                self.set_event_type_all_mode(False)
+            elif pressed == 'Return':
+                if self.frame_selection.select_event_type():
+                    self.set_event_type_all_mode(False)
         elif self._is_alt_key(event):
             if pressed == 'e':
                 self.show_ann_frame()
@@ -435,6 +485,8 @@ class SentenceAnnotation(Frame):
             elif pressed == 'd':
                 print('delete mode')
                 self.set_delete_mode(True)
+            elif pressed == 't':
+                self.set_event_type_mode(True)
             elif pressed == 'l':
                 self.set_list_mode(True)
             elif pressed == 'f':

@@ -22,6 +22,7 @@ class SentencesPanel(Frame):
         self.parent = parent
         self.makeWidgets(options)
         self.options = options
+        self.focus_list = None
         self.todo_queue = queue.Queue()
         self.doing_queue = queue.Queue()
         self.done_queue = queue.Queue()
@@ -74,7 +75,7 @@ class SentencesPanel(Frame):
         self.todo_scroll.set_ctrl_3_handler(lambda i, s: self.set_current_focus_list(self.done_scroll))
         self.doing_scroll.set_ctrl_3_handler(lambda i, s: self.set_current_focus_list(self.done_scroll))
 
-        self.set_current_focus_list(self.todo_scroll)
+        #
         self.parent.bind_all('<KeyPress>', self.on_keyboard)
 
 
@@ -89,6 +90,8 @@ class SentencesPanel(Frame):
     def select_next_in_focus_list(self):
         if self.focus_list:
             self.focus_list.select_next()
+        else:
+            self.set_current_focus_list(self.doing_scroll)
 
     def select_previous_in_focus_list(self):
         if self.focus_list:

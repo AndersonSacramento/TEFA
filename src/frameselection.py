@@ -166,12 +166,12 @@ class FrameSelection(Frame):
             frame = self.suggestions_frames[i]
             self.selected_frames[frame.ID] = frame
             event_ann = self.create_or_update_event_ann(event.id, frame.ID)
-            if not event_ann: return
+            if not event_ann: return None
             self.var_event_type.set('Tipo: %s' % s)
             self.btn_remove_type.pack(side=RIGHT)
             if self.event_ann_type_selection_handler:
                 self.event_ann_type_selection_handler(event, event_ann, frame)
-        
+            return True
         
     def event_type_selection_all(self, i, s):
         event_pos = self.triggers_combo.current()
@@ -252,7 +252,12 @@ class FrameSelection(Frame):
         index, label = self.all_scroll.get_current_selection()
         if index >= 0:
            return  self.event_type_selection_all(index, label)
-        
+
+    def select_suggestion_event_type(self):
+        index, label = self.suggestion_scroll.get_current_selection()
+        if index >= 0:
+           return  self.event_type_selection_suggestion(index, label)
+       
     def view_info_current_frame(self):
         index, label = self.all_scroll.get_current_selection()
         if self.search_results:
@@ -265,7 +270,13 @@ class FrameSelection(Frame):
 
     def select_previous_frame_all_list(self):
         self.all_scroll.select_previous()
-            
+
+    def select_next_frame_suggestion_list(self):
+            self.suggestion_scroll.select_next()
+
+    def select_previous_frame_suggestion_list(self):
+        self.suggestion_scroll.select_previous()
+        
     def search_frame(self, search_str):
         if self.all_frames:
             self.all_scroll.clear_list()
