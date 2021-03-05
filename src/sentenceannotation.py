@@ -217,14 +217,14 @@ class SentenceAnnotation(Frame):
         self.sentence_text_view.see(INSERT)
         if self.is_select_mode():
             before_pos = (int(cur_index.split('.')[1]) % end_pos)
+            try:
+                sel_first = self.sentence_text_view.index(SEL_FIRST)
+                sel_last = self.sentence_text_view.index(SEL_LAST)
+            except:
+                sel_first = '1.%s' % ((int(cur_index.split('.')[1])) % end_pos)
+                sel_last = '1.%s' % ((int(cur_index.split('.')[1])) % end_pos)
+            cur_index = self.sentence_text_view.index(INSERT)
             if cur_pos > before_pos:
-                try:
-                    sel_first = self.sentence_text_view.index(SEL_FIRST)
-                    sel_last = self.sentence_text_view.index(SEL_LAST)
-                except:
-                    sel_first = '1.%s' % ((int(cur_index.split('.')[1])) % end_pos)
-                    sel_last = '1.%s' % ((int(cur_index.split('.')[1])) % end_pos)
-                cur_index = self.sentence_text_view.index(INSERT)
                 if sel_last > cur_index > sel_first:
                     self.sentence_text_view.tag_remove(SEL, '1.0', END)
                     self.sentence_text_view.tag_delete(SEL, '1.0', END)
@@ -232,13 +232,6 @@ class SentenceAnnotation(Frame):
                 else:
                      self.sentence_text_view.tag_add(SEL, sel_first, cur_index)
             else:
-                try:
-                    sel_last = self.sentence_text_view.index(SEL_LAST)
-                    sel_first = self.sentence_text_view.index(SEL_FIRST)
-                except:
-                    sel_last = '1.%s' % ((int(cur_index.split('.')[1])) % end_pos)
-                    sel_first = '1.%s' % ((int(cur_index.split('.')[1])) % end_pos)
-                cur_index = self.sentence_text_view.index(INSERT)
                 if  sel_last > cur_index > sel_first:
                     self.sentence_text_view.tag_remove(SEL, '1.0', END)
                     self.sentence_text_view.tag_delete(SEL, '1.0', END)
@@ -263,6 +256,70 @@ class SentenceAnnotation(Frame):
         self.sentence_text_view.mark_set(INSERT, END)
         self.sentence_text_view.focus_set()
         self.sentence_text_view.see(INSERT)
+
+
+    def _move_by_word(self, forwards=True):
+        cur_index = self.sentence_text_view.index(INSERT)
+        if not cur_index:
+            self.sentence_text_view.mark_set(INSERT, '1.0')
+            cur_index = '1.0'
+            
+        self.sentence_text_view.focus_set()
+        self.sentence_text_view.see(INSERT)
+        
+        word_index = self.sentence_text_view.index('%s wordstart' % cur_index)
+        end_word_index = self.sentence_text_view.search(' ', word_index, forwards=forwards)
+        print('move by wrod cur_index %s' % cur_index)
+        print('move by wrod word_index %s' % word_index)
+        print('move by wrod end_word_index %s' % end_word_index)
+        
+        if forwards:
+            if word_index == end_word_index:
+                word_index = self.sentence_text_view.search('[^ ]', end_word_index, forwards=forwards, regexp=True)
+                end_word_index = self.sentence_text_view.search(' ', word_index, forwards=forwards)
+            self.sentence_text_view.mark_set(INSERT, end_word_index)
+        else:
+            if word_index == end_word_index or word_index == cur_index:
+                word_index = self.sentence_text_view.search('[^ ]', word_index, backwards=True, regexp=True)
+                print('move by new  word_index %s' % word_index)
+                word_index = self.sentence_text_view.index('%s wordstart' % word_index)
+                print('move by new  new word_index %s' % word_index)
+
+            self.sentence_text_view.mark_set(INSERT, word_index)
+        end_index = self.sentence_text_view.index('1.end')
+        end_pos = int(end_index.split('.')[1])
+        if self.is_select_mode():
+            try:
+                sel_first = self.sentence_text_view.index(SEL_FIRST)
+                sel_last = self.sentence_text_view.index(SEL_LAST)
+            except:
+                sel_first = '1.%s' % ((int(cur_index.split('.')[1])) % end_pos)
+                sel_last = '1.%s' % ((int(cur_index.split('.')[1])) % end_pos)
+            before_index = cur_index
+            cur_index = self.sentence_text_view.index(INSERT)
+            if cur_index > before_index:
+                if sel_last > cur_index > sel_first:
+                    self.sentence_text_view.tag_remove(SEL, '1.0', END)
+                    self.sentence_text_view.tag_delete(SEL, '1.0', END)
+                    self.sentence_text_view.tag_add(SEL, cur_index, sel_last)
+                else:
+                    self.sentence_text_view.tag_add(SEL, sel_first, cur_index)
+            else:
+                if  sel_last > cur_index > sel_first:
+                    self.sentence_text_view.tag_remove(SEL, '1.0', END)
+                    self.sentence_text_view.tag_delete(SEL, '1.0', END)
+                    self.sentence_text_view.tag_add(SEL, sel_first, cur_index)
+                else:
+                    self.sentence_text_view.tag_add(SEL, cur_index, sel_last)
+
+            
+    def _move_by_word_forward(self):
+        self._move_by_word(forwards=True)
+
+    def _move_by_word_backward(self):
+        self._move_by_word(forwards=False)
+        
+
 
     def set_select_text_mode(self, value):
         self.select_text_mode = value
@@ -366,6 +423,10 @@ class SentenceAnnotation(Frame):
                 elif pressed == 'a':
                     self.show_ann_frame()
                     self.fe_selection.cycle_selection_ann_fe()
+                elif pressed == 'f':
+                    self._move_by_word_forward()
+                elif pressed == 'b':
+                    self._move_by_word_backward()                    
             elif pressed == 'a':
                 self.annotate_arg()
                 self.set_select_text_mode(False)
@@ -474,6 +535,10 @@ class SentenceAnnotation(Frame):
             elif pressed == 'a':
                 self.show_ann_frame()
                 self.fe_selection.cycle_selection_ann_fe()
+            elif pressed == 'f':
+                self._move_by_word_forward()
+            elif pressed == 'b':
+                self._move_by_word_backward()
         elif self._is_ctrl_key(event):
             print('contrl key pressed: %s' % pressed)
             if pressed == 's':
