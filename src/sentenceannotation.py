@@ -102,10 +102,15 @@ class SentenceAnnotation(Frame):
         self.fe_selection.pack(side=TOP, anchor=SW)
         self.fe_selection.set_arg_ann_remove_handler(self.ask_delete_cur_arg)#self.arg_ann_remove_handler)
         self.fe_selection.set_on_fe_selection_handler(self.set_fe_arg_label)
-        left_frame.pack(side=LEFT, expand=YES, fill=BOTH)
+
         #self.fe_selection.set_arg_val_handler(self.arg_val_handler)
         
 
+        self.mode_str_var = StringVar()
+        label_mode = Label(left_frame, text='', textvariable=self.mode_str_var, font=('times', 12))
+        label_mode.pack(side=TOP, expand=YES, fill=X)
+        left_frame.pack(side=LEFT, expand=YES, fill=BOTH)
+        
         right_frame = Frame(self)
         self.frame_selection = FrameSelection(options, parent=right_frame)
         self.frame_selection.pack(side=TOP, anchor=NE)
@@ -202,6 +207,7 @@ class SentenceAnnotation(Frame):
         return self.not_selected_fe_selection_mode
 
     def start_select_text_mode(self):
+        self.print_mode_msg('modo de seleção de texto')
         cur_index = self.sentence_text_view.index(INSERT)
         if cur_index:
             self.sentence_text_view.tag_add(SEL, cur_index, cur_index)
@@ -212,8 +218,10 @@ class SentenceAnnotation(Frame):
             
 
     def stop_select_text_mode(self):
+        self._print_quit_mode_msg('modo de seleção de texto')
         self.sentence_text_view.tag_remove(SEL, '1.0', END)
         self.sentence_text_view.tag_delete(SEL, '1.0', END)
+        self.hide_ann_frame()
     
     def _move_by_char_step(self, step_fn):
         cur_index = self.sentence_text_view.index(INSERT)
@@ -396,12 +404,12 @@ class SentenceAnnotation(Frame):
     
     def increment_search_str(self, char):
         self.search_str += char
-        print('search string: %s' % self.search_str)
+        self.print_mode_msg('search string: %s' % self.search_str)
         self.frame_selection.search_frame(self.search_str)
 
     def decrement_search_str(self):
         self.search_str = self.search_str[:-1]
-        print('search string: %s' % self.search_str)
+        self.print_mode_msg('search string: %s' % self.search_str)
         self.frame_selection.search_frame(self.search_str)
         
     def is_search_mode(self):
@@ -413,6 +421,7 @@ class SentenceAnnotation(Frame):
 
     
     def on_keyboard(self, event):
+        self._print_empty_mode_msg()
         pressed = event.keysym
      
         #self.bind_all('<Control-Key-f>', lambda e: Frame.destroy(self.parent))
@@ -452,6 +461,7 @@ class SentenceAnnotation(Frame):
                 self.start_list_args_mode()
             elif self.is_cancel_cmd(event):
                 self.set_list_mode(False)
+                self._print_quit_mode_msg('modo de listagem de argumentos')
         elif self.is_list_args_mode():
             if pressed == 'n' or (self._is_ctrl_key(event) and pressed == 'n'):
                 self.set_next_arg_ann_to_view()
@@ -488,7 +498,7 @@ class SentenceAnnotation(Frame):
         elif self.is_search_mode():
             if self._is_ctrl_key(event):
                 if  pressed == 'g':
-                    print('cancel search mode')
+                    self._print_quit_mode_msg('modo de pesquisa')
                     self.set_search_mode(False)
                     self.frame_selection.clear_search_frame()
                 elif pressed == 'n':
@@ -508,7 +518,7 @@ class SentenceAnnotation(Frame):
                 if pressed == 'BackSpace':
                     self.decrement_search_str()
                 else:
-                    self.increment_search_str(pressed)
+                    self.increment_search_str(event.char)
         elif self.is_event_type_mode():
             if pressed == 's':
                 self.set_event_type_mode(False)
@@ -550,6 +560,7 @@ class SentenceAnnotation(Frame):
             elif self.is_cancel_cmd(event):
                 self.set_arg_fe_selection_mode(False)
                 self.hide_ann_frame()
+                self._print_quit__mode_msg('modo de selação de tipo do argumento') 
         elif self.is_not_selected_fe_selection_mode():
             if pressed == 'n':
                 self.fe_selection.cycle_next_selection_all_fe()
@@ -560,6 +571,7 @@ class SentenceAnnotation(Frame):
             elif self.is_cancel_cmd(event):
                 self.set_not_selected_fe_selection_mode(False)
                 self.hide_ann_frame()
+                self._print_quit__mode_msg('modo de selação de tipo do argumento') 
         elif self._is_alt_key(event):
             if pressed == 'e':
                 self.start_not_selected_fe_selection_mode()
@@ -581,7 +593,7 @@ class SentenceAnnotation(Frame):
             print('contrl key pressed: %s' % pressed)
             if pressed == 's':
                 self.set_search_mode(True)
-                print('enter search mode')
+                self.print_mode_msg('modo de pesquisa')
             elif pressed == 'g':
                 print('cancel search mode')
                 self.set_search_mode(False)
@@ -616,6 +628,16 @@ class SentenceAnnotation(Frame):
         return "break"
 
 
+
+    def _print_empty_mode_msg(self):
+        self.print_mode_msg('')
+        
+    def _print_quit_mode_msg(self, mode_name):
+        self.print_mode_msg('cancelado %s' % mode_name)
+        
+    def print_mode_msg(self, msg):
+        self.mode_str_var.set(msg)
+    
     def set_fe_arg_ann_label(self, arg_ann):
         fe_color = self.fe_selection.get_fe_color(arg_ann.event_fe_id)
         fe = self.fe_selection.get_arg_fe(arg_ann.event_fe_id)
@@ -721,6 +743,7 @@ class SentenceAnnotation(Frame):
         self.ann_frame.pack_forget()
 
     def start_not_selected_fe_selection_mode(self):
+        self.print_mode_msg('modo de seleção de tipo do argumento')
         self.set_not_selected_fe_selection_mode(True)
         self.show_ann_frame()
         self.fe_selection.cycle_next_selection_all_fe()
@@ -728,28 +751,33 @@ class SentenceAnnotation(Frame):
 
 
     def start_arg_fe_selection_mode(self):
+        self.print_mode_msg('modo de seleção de tipo do argumento')
         self.show_ann_frame()
         self.set_arg_fe_selection_mode(True)
         self.fe_selection.cycle_next_selection_ann_fe()
         self.fe_selection.cycle_previous_selection_ann_fe()
         
     def start_delete_arg_mode(self):
+        self.print_mode_msg('modo de exclusão de argumentos')
         self.ann_frame.pack_forget()
         self.arg_frame.pack(side=TOP, expand=YES, fill=X)
         self.set_next_arg_ann_to_delete()
 
 
     def start_list_args_mode(self):
+        self.print_mode_msg('modo de listagem de argumentos')
         self.ann_frame.pack_forget()
         self.arg_frame.pack(side=TOP, expand=YES, fill=X)
         self.set_next_arg_ann_to_view()
 
     def stop_list_args_mode(self):
+        self._print_quit_mode_msg('modo de listagem de argumentos')
         self.arg_frame.pack_forget()
         self.to_view_arg_ann = None
         self.load_event_args_ann_tags()
         
     def stop_delete_arg_mode(self):
+        self._print_quit_mode_msg('modo de exclusão de argumentos')
         self.arg_frame.pack_forget()
         self.to_delete_arg_ann = None
         self.load_event_args_ann_tags()

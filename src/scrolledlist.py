@@ -128,6 +128,18 @@ class ScrolledList(Frame):
     def get_list_focus(self):
         self.listbox.focus_force()
         
+
+    def set_1_handler(self, func):
+        self._1_handler = func
+        self.listbox.bind('<KeyPress-1>', self.handler_1)
+
+    def set_2_handler(self, func):
+        self._2_handler = func
+        self.listbox.bind('<KeyPress-2>', self.handler_2)
+
+    def set_3_handler(self, func):
+        self._3_handler = func
+        self.listbox.bind('<KeyPress-3>', self.handler_3)
         
     def set_ctrl_1_handler(self, func):
         self.ctrl_1_handler = func
@@ -181,7 +193,16 @@ class ScrolledList(Frame):
     def handler_return_key(self, event):
         self.generic_handler_call(event, self.handler_return_key)
 
-    
+
+    def handler_1(self, event):
+        self._1_handler(0, '')
+
+    def handler_2(self, event):
+        self._2_handler(0, '')
+        
+    def handler_3(self, event):
+        self._3_handler(0, '')
+
     def handler_ctrl_1(self, event):
         self.ctrl_1_handler(0, '')
 

@@ -18,11 +18,11 @@ class FEListSelectionFrame(Frame):
         self.fes_colors = list(fes.values())
         self.create_fes_radios_list()
 
-    # def cycle_selection_fe(self):
-    #     if self.fes_colors:
-    #         cur_fe_name = self.var_fes.get()
-    #         self.var_fes.set(self._get_next_fe_name(cur_fe_name))
-    #         self.on_press_radio_arg()
+    def cycle_selection_fe(self):
+        if self.fes_colors:
+            cur_fe_name = self.var_fes.get()
+            self.var_fes.set(self._get_next_fe_name(cur_fe_name))
+            self.on_press_radio_arg()
 
     # def _get_next_fe_name(self, fe_name):
     #     i = 0

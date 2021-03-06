@@ -66,14 +66,24 @@ class SentencesPanel(Frame):
 
 
         # Move between lists
-        self.doing_scroll.set_ctrl_1_handler(lambda i, s: self.set_current_focus_list(self.todo_scroll))
-        self.done_scroll.set_ctrl_1_handler(lambda i, s: self.set_current_focus_list(self.todo_scroll))
+        todo_focus_lambda = lambda i, s: self.set_current_focus_list(self.todo_scroll)
+        doing_focus_lambda = lambda i, s: self.set_current_focus_list(self.doing_scroll)
+        done_focus_lambda = lambda i, s: self.set_current_focus_list(self.done_scroll)
         
-        self.todo_scroll.set_ctrl_2_handler(lambda i, s: self.set_current_focus_list(self.doing_scroll))
-        self.done_scroll.set_ctrl_2_handler(lambda i, s: self.set_current_focus_list(self.doing_scroll))
+        self.doing_scroll.set_ctrl_1_handler(todo_focus_lambda)
+        self.doing_scroll.set_1_handler(todo_focus_lambda)
+        self.done_scroll.set_ctrl_1_handler(todo_focus_lambda)
+        self.done_scroll.set_1_handler(todo_focus_lambda)
+        
+        self.todo_scroll.set_ctrl_2_handler(doing_focus_lambda)
+        self.todo_scroll.set_2_handler(doing_focus_lambda)
+        self.done_scroll.set_ctrl_2_handler(doing_focus_lambda)
+        self.done_scroll.set_2_handler(doing_focus_lambda)
 
-        self.todo_scroll.set_ctrl_3_handler(lambda i, s: self.set_current_focus_list(self.done_scroll))
-        self.doing_scroll.set_ctrl_3_handler(lambda i, s: self.set_current_focus_list(self.done_scroll))
+        self.todo_scroll.set_ctrl_3_handler(done_focus_lambda)
+        self.todo_scroll.set_3_handler(done_focus_lambda)
+        self.doing_scroll.set_ctrl_3_handler(done_focus_lambda)
+        self.doing_scroll.set_3_handler(done_focus_lambda)
 
         #
         self.parent.bind_all('<KeyPress>', self.on_keyboard)
@@ -105,6 +115,10 @@ class SentencesPanel(Frame):
                 self.select_next_in_focus_list()
             elif pressed == 'p':
                 self.select_previous_in_focus_list()
+        elif pressed == 'n':
+            self.select_next_in_focus_list()
+        elif pressed == 'p':
+            self.select_previous_in_focus_list()
         elif pressed == 'Down':
             self.select_next_in_focus_list()
         elif pressed == 'Up':

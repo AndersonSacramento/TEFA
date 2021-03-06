@@ -44,6 +44,7 @@ if __name__ == '__main__':
                'annotators':{'title': 'Anotadores'}}#'data':['ander@mail.com', 'silva@gmail.com']}}
     fnutils.create_session()
     root = Tk()
+    root.title('TEFA')
     main_panel = MainPanel(options, parent=root)
     w, h = root.winfo_screenwidth(), root.winfo_screenheight()
     root.geometry("%dx%d+0+0" % (w, h))
