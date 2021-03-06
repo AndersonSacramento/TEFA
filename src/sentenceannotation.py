@@ -457,6 +457,8 @@ class SentenceAnnotation(Frame):
                 self.set_next_arg_ann_to_view()
             elif pressed == 'p' or (self._is_ctrl_key(event) and pressed == 'p'):
                 self.set_previous_arg_ann_to_view()
+            elif pressed == 'i':
+                self.show_cur_arg_fe_definition_dialog()
             elif self.is_cancel_cmd(event):
                 self.stop_list_args_mode()
                 self.set_list_args_mode(False)
@@ -543,6 +545,8 @@ class SentenceAnnotation(Frame):
                 self.fe_selection.cycle_next_selection_ann_fe()
             elif pressed == 'p':
                 self.fe_selection.cycle_previous_selection_ann_fe()
+            elif pressed == 'i':
+                self.show_cur_selected_fe_definition_dialog()
             elif self.is_cancel_cmd(event):
                 self.set_arg_fe_selection_mode(False)
                 self.hide_ann_frame()
@@ -551,6 +555,8 @@ class SentenceAnnotation(Frame):
                 self.fe_selection.cycle_next_selection_all_fe()
             elif pressed == 'p':
                 self.fe_selection.cycle_previous_selection_all_fe()
+            elif pressed == 'i':
+                self.show_cur_selected_fe_definition_dialog()
             elif self.is_cancel_cmd(event):
                 self.set_not_selected_fe_selection_mode(False)
                 self.hide_ann_frame()
@@ -800,7 +806,39 @@ class SentenceAnnotation(Frame):
     def set_previous_arg_ann_to_view(self):
         self._set_step_arg_ann_to_view(lambda i: i-1)
 
-            
+    def show_cur_selected_fe_definition_dialog(self):
+        output = self.fe_selection.get_radio_fe_and_color()
+        if not output: return
+        if output:
+            fe, fe_color = output
+        self.show_fe_definition_dialog(fe, fe_color)
+
+    def show_cur_arg_fe_definition_dialog(self):
+        if not self.to_view_arg_ann: return
+        fe_id = self.to_view_arg_ann.event_fe_id
+        fe_color = self.fe_selection.get_fe_color(fe_id)
+        fe = self.fe_selection.get_arg_fe(fe_id)
+        self.show_fe_definition_dialog(fe, fe_color)
+
+    def show_fe_definition_dialog(self, fe, fe_color):
+        win = Toplevel()
+        win.title(fe.name)
+        msg = Message(win, text=fe.definition)
+        msg.config(bg=fe_color, font=('times', 16, 'italic'))
+        msg.pack(fill=X, expand=YES)
+
+        win.update()
+        x_left = int(self.winfo_screenwidth()/2 - win.winfo_width()/2)
+        y_top = int(self.winfo_screenheight()/2 - win.winfo_height()/2)
+        
+        win.geometry("+{}+{}".format(x_left, y_top))
+         
+        win.bind('<KeyPress-q>', lambda e: Frame.destroy(win))
+        win.focus_set()
+        win.grab_set()
+        win.wait_window()
+
+                          
             
     def ask_delete_cur_arg(self, to_delete_arg_ann=None):
         ans = askquestion('Pergunta', 'Você confirma a remoção do argumento?', parent=self)
