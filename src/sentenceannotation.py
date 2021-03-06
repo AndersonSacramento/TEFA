@@ -503,6 +503,8 @@ class SentenceAnnotation(Frame):
             elif self.is_cancel_cmd(event):
                 self.set_event_type_mode(False)
         elif self.is_event_type_suggestion_mode():
+            if self._is_ctrl_key(event) and pressed == 'i':
+                self.frame_selection.view_info_current_suggestion_frame()
             if pressed == 'n':
                 self.frame_selection.select_next_frame_suggestion_list()
             elif pressed == 'p':

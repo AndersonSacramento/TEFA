@@ -257,7 +257,14 @@ class FrameSelection(Frame):
         index, label = self.suggestion_scroll.get_current_selection()
         if index >= 0:
            return  self.event_type_selection_suggestion(index, label)
-       
+
+    def view_info_current_suggestion_frame(self):
+        index, label = self.suggestion_scroll.get_current_selection()
+        if self.suggestions_frames:
+            frame = self.suggestions_frames[index]
+            if frame:
+                self.load_view_frame_info(frame)
+                
     def view_info_current_frame(self):
         index, label = self.all_scroll.get_current_selection()
         if self.search_results:

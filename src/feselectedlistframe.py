@@ -73,7 +73,7 @@ class FESelectedListFrame(Frame):
 
     def get_fe_color(self, fe_id):
         print('fes selected %s' % self.fes)
-        if self.fes:
+        if self.fes and fe_id in  self.fes:
             return self.fes.get(fe_id).color
         else:
             return ''
