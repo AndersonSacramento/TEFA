@@ -41,7 +41,9 @@ class SentenceAnnotation(Frame):
         self.set_event_type_mode(False)
         self.set_event_type_suggestion_mode(False)
         self.set_event_type_all_mode(False)
-
+        self.set_not_selected_fe_selection_mode(False)
+        self.set_arg_fe_selection_mode(False)
+        
     def middle_button_in_text(self):
         self.sentence_text_view.edit_undo()
         
@@ -186,6 +188,18 @@ class SentenceAnnotation(Frame):
         return event.state & 0x0004 or event.keysym == 'Control_L' or event.keysym == 'Control_R'
 
 
+
+    def set_arg_fe_selection_mode(self, value):
+        self.arg_fe_selection_mode = value
+
+    def is_arg_fe_selection_mode(self):
+        return self.arg_fe_selection_mode
+
+    def set_not_selected_fe_selection_mode(self, value):
+        self.not_selected_fe_selection_mode = value
+
+    def is_not_selected_fe_selection_mode(self):
+        return self.not_selected_fe_selection_mode
 
     def start_select_text_mode(self):
         cur_index = self.sentence_text_view.index(INSERT)
@@ -524,10 +538,26 @@ class SentenceAnnotation(Frame):
             elif pressed == 'Return':
                 if self.frame_selection.select_event_type():
                     self.set_event_type_all_mode(False)
+        elif self.is_arg_fe_selection_mode():
+            if pressed == 'n':
+                self.fe_selection.cycle_next_selection_ann_fe()
+            elif pressed == 'p':
+                self.fe_selection.cycle_previous_selection_ann_fe()
+            elif self.is_cancel_cmd(event):
+                self.set_arg_fe_selection_mode(False)
+                self.hide_ann_frame()
+        elif self.is_not_selected_fe_selection_mode():
+            if pressed == 'n':
+                self.fe_selection.cycle_next_selection_all_fe()
+            elif pressed == 'p':
+                self.fe_selection.cycle_previous_selection_all_fe()
+            elif self.is_cancel_cmd(event):
+                self.set_not_selected_fe_selection_mode(False)
+                self.hide_ann_frame()
         elif self._is_alt_key(event):
             if pressed == 'e':
-                self.show_ann_frame()
-                self.fe_selection.cycle_selection_all_fe()
+                self.start_not_selected_fe_selection_mode()
+                #self.fe_selection.cycle_selection_all_fe()
             # elif pressed == 'c':
             #     self.show_ann_frame()
             #     self.fe_selection.cycle_selection_core_fe()
@@ -535,8 +565,8 @@ class SentenceAnnotation(Frame):
             #     self.show_ann_frame()
             #     self.fe_selection.cycle_selection_peripheral_fe()
             elif pressed == 'a':
-                self.show_ann_frame()
-                self.fe_selection.cycle_selection_ann_fe()
+                self.start_arg_fe_selection_mode()
+                #self.fe_selection.cycle_selection_ann_fe()
             elif pressed == 'f':
                 self._move_by_word_forward()
             elif pressed == 'b':
@@ -680,7 +710,22 @@ class SentenceAnnotation(Frame):
         self.arg_frame.pack_forget()
         self.ann_frame.pack(side=TOP, expand=YES, fill=X)
         self.set_fe_arg_label()
-            
+
+    def hide_ann_frame(self):
+        self.ann_frame.pack_forget()
+
+    def start_not_selected_fe_selection_mode(self):
+        self.set_not_selected_fe_selection_mode(True)
+        self.show_ann_frame()
+        self.fe_selection.cycle_next_selection_all_fe()
+        self.fe_selection.cycle_previous_selection_all_fe()
+
+
+    def start_arg_fe_selection_mode(self):
+        self.show_ann_frame()
+        self.set_arg_fe_selection_mode(True)
+        self.fe_selection.cycle_next_selection_ann_fe()
+        self.fe_selection.cycle_previous_selection_ann_fe()
         
     def start_delete_arg_mode(self):
         self.ann_frame.pack_forget()

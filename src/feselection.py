@@ -61,7 +61,12 @@ class FESelection(Frame):
            return  self.selection_frame.get_radio_fe_and_color()
 
 
+    def cycle_next_selection_all_fe(self):
+        self.all_selection_list.cycle_next_selection_fe()
 
+    def cycle_previous_selection_all_fe(self):
+        self.all_selection_list.cycle_previous_selection_fe()
+       
     def cycle_selection_all_fe(self):
         self.all_selection_list.cycle_selection_fe()
         
@@ -71,6 +76,12 @@ class FESelection(Frame):
     def cycle_selection_peripheral_fe(self):
         self.peripheral_selection_list.cycle_selection_fe()
 
+    def cycle_next_selection_ann_fe(self):
+        self.fes_selection_list.cycle_next_selection_fe()
+
+    def cycle_previous_selection_ann_fe(self):
+        self.fes_selection_list.cycle_previous_selection_fe()
+        
     def cycle_selection_ann_fe(self):
         self.fes_selection_list.cycle_selection_fe()
 

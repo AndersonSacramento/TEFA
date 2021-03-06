@@ -18,22 +18,63 @@ class FEListSelectionFrame(Frame):
         self.fes_colors = list(fes.values())
         self.create_fes_radios_list()
 
-    def cycle_selection_fe(self):
+    # def cycle_selection_fe(self):
+    #     if self.fes_colors:
+    #         cur_fe_name = self.var_fes.get()
+    #         self.var_fes.set(self._get_next_fe_name(cur_fe_name))
+    #         self.on_press_radio_arg()
+
+    # def _get_next_fe_name(self, fe_name):
+    #     i = 0
+    #     for fe_color in self.fes_colors:
+    #         if fe_color.fe.name == fe_name:
+    #             break
+    #         i += 1
+    #     if i+1 < len(self.fes_colors):
+    #         return self.fes_colors[i+1].fe.name
+    #     else:
+    #         return self.fes_colors[0].fe.name
+
+
+    
+    def cycle_step_selection_fe(self, step_func):
         if self.fes_colors:
             cur_fe_name = self.var_fes.get()
-            self.var_fes.set(self._get_next_fe_name(cur_fe_name))
+            self.var_fes.set(step_func(cur_fe_name))
             self.on_press_radio_arg()
+            
+    def cycle_next_selection_fe(self):
+        self.cycle_step_selection_fe(self._get_next_fe_name)
 
+    def cycle_previous_selection_fe(self):
+        self.cycle_step_selection_fe(self._get_previous_fe_name)
+        
+    def _get_previous_fe_name(self, fe_name):
+        return self._get_step_fe_name(fe_name, lambda i : i-1)
+    
     def _get_next_fe_name(self, fe_name):
+        return self._get_step_fe_name(fe_name, lambda i : i+1)
+    # i = 0
+    # for fe_color in self.fes_colors:
+    #     if fe_color.fe.name == fe_name:
+    #         break
+    #     i += 1
+    # if i+1 < len(self.fes_colors):
+    #     return self.fes_colors[i+1].fe.name
+    # else:
+    #     return self.fes_colors[0].fe.name
+
+    def _get_step_fe_name(self, fe_name, step_func):
         i = 0
         for fe_color in self.fes_colors:
             if fe_color.fe.name == fe_name:
                 break
             i += 1
-        if i+1 < len(self.fes_colors):
-            return self.fes_colors[i+1].fe.name
-        else:
-            return self.fes_colors[0].fe.name
+
+        i = step_func(i)
+        i = i % len(self.fes_colors)
+        return self.fes_colors[i].fe.name
+        
 
     def on_press_radio_arg(self):
         pick = self.var_fes.get()
