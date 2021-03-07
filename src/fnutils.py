@@ -2,6 +2,7 @@ from nltk.corpus import framenet as fn
 from nltk.corpus import wordnet as wn
 import sqlalchemy
 from sqlalchemy import create_engine
+import _thread
 
 from sqlalchemy.orm import sessionmaker
 

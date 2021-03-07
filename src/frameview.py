@@ -18,8 +18,8 @@ class FrameView(Frame):
     def make_widgets(self):
         self.scroll_text = ScrolledText(self, text=str(self.fn_frame))
         self.scroll_text.get_text_widget().bind("<KeyPress>", self.on_keyboard)
-
-
+        self.scroll_text.focus_force()
+        
 
     def key_bind_help(self):
         text = """

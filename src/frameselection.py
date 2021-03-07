@@ -20,6 +20,7 @@ class FrameSelection(Frame):
         self.suggestions_queue = queue.Queue()
         self.all_frames_queue = queue.Queue()
         self.events = []
+        self.events_ann = []
         self.selected_frames = dict()
         self.event_ann_type_selection_handler = None
         self.event_val_handler = None
@@ -29,6 +30,7 @@ class FrameSelection(Frame):
     def set_events(self, events):
         self.events = events
         self.triggers_combo.config(values=[e.trigger for e in events])
+        self.cycle_combobox_trigger()
 
 
     # def set_val_event(self, val_event):
@@ -204,8 +206,14 @@ class FrameSelection(Frame):
         #scroll_text = ScrolledText(win, text=str(frame))
         #scroll_text.get_text_widget().bind("<Key>", lambda e: "break")
         frame_view = FrameView({'frame':frame}, win)
-        win.focus_set()
-        win.grab_set()
+        win.update()
+        x_left = int(self.winfo_screenwidth()/2 - win.winfo_width()/2)
+        y_top = int(self.winfo_screenheight()/2 - win.winfo_height()/2)
+                
+        win.geometry("+{}+{}".format(x_left, y_top))
+        
+        #win.focus_set()
+        #win.grab_set()
         win.wait_window()
         
     def trigger_change_handler(self, event):
@@ -267,8 +275,9 @@ class FrameSelection(Frame):
                 
     def view_info_current_frame(self):
         index, label = self.all_scroll.get_current_selection()
-        if self.search_results:
-            frame = self.search_results[index]
+        frames = self.search_results if self.search_results else self.all_frames
+        if frames:
+            frame = frames[index]
             if frame:
                 self.load_view_frame_info(frame)
     

@@ -538,7 +538,7 @@ class SentenceAnnotation(Frame):
             elif self.is_cancel_cmd(event):
                 self.set_event_type_mode(False)
         elif self.is_event_type_suggestion_mode():
-            if self._is_ctrl_key(event) and pressed == 'i':
+            if pressed == 'i':
                 self.frame_selection.view_info_current_suggestion_frame()
             if pressed == 'n':
                 self.frame_selection.select_next_frame_suggestion_list()
@@ -552,6 +552,8 @@ class SentenceAnnotation(Frame):
                 if self.frame_selection.select_suggestion_event_type():
                     self.set_event_type_suggestion_mode(False)
         elif self.is_event_type_all_mode():
+            if  pressed == 'i':
+                self.frame_selection.view_info_current_frame()
             if pressed == 'n':
                 self.frame_selection.select_next_frame_all_list()
             elif pressed == 'p':
@@ -971,6 +973,7 @@ class SentenceAnnotation(Frame):
 
     def show_frame_selection_mode_helper_dialog(self):
         help_msg = """
+        i : visualizar informações do frame selecionado\n\n
         g : sair do modo de seleção de tipo/frame de evento\n\n
         n : selecionar próximo frame da lista\n\n
         p : seleciona frame anterior da lista\n\n
@@ -1110,8 +1113,8 @@ class SentenceAnnotation(Frame):
             self.sentence_text_view.delete('1.0', END)
             self.sentence_text_view.insert('1.0', self.sentence.text)
             print([e.trigger for e in events])
-            self.frame_selection.set_events(events)
             self.frame_selection.set_events_ann(self.events_ann)
+            self.frame_selection.set_events(events)
         self.after(10, self.update_sentence_text)
 
 
