@@ -133,6 +133,8 @@ class FESelectedListFrame(Frame):
                     scrollregion=self.canvas.bbox("all")
                 )
             )
+            scrollable_frame.bind_all("<MouseWheel>", self._on_mousewheel)
+            self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
             
         
         for i, fe_color in enumerate(self.fes_colors):
@@ -166,9 +168,17 @@ class FESelectedListFrame(Frame):
             row.pack(expand=YES, fill=X)
         if self.fes:
             #width = self.canvas.bbox()[2] - self.canvas.bbox()[0]
+            self.canvas.update()
             print('canvas width %s' % self.canvas.winfo_width())
             self.rows_ids.append(self.canvas.create_window((0,0),  width=self.canvas.winfo_width(), window=scrollable_frame, anchor='nw'))
         self.canvas.config(yscrollcommand=self.sbar.set)
+
+        
+
+
+        
+    def _on_mousewheel(self, event):
+        self.canvas.yview_scroll(-1*(event.delta/120), "units")
 
             #(i+1) * 80)
             #print('next pos (%d,%d)' % (10, ((i+1)*20) + next_row_px_add))
