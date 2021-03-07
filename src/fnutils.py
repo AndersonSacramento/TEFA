@@ -31,6 +31,7 @@ def session_scope():
 def create_session():
     global Session
     Session = sessionmaker(bind=engine, expire_on_commit=False)
+    get_all_event_or_state_frames()
 
 def now():
     return datetime.now(timezone.utc)
@@ -272,17 +273,47 @@ def load_fn_events_lemmas():
         session.add(lemma_fn)
     session.commit()
 
+
+
+
+def is_event_or_state(frame):
+    if frame:
+        if frame.name in ['Event', 'State']:
+            return frame
+        for rel_name in ['Inheritance', 'Using']:
+            for rel in filter_rel(frame, rel_name):
+                parcial_r = is_event_or_state(rel.Parent)
+                if parcial_r:
+                    return parcial_r
+
+
+
 def is_event(frame):
     if frame and frame.name == 'Event':
         return frame
     elif frame:
-        for rel in filter_inheritance(frame):
-            parcial_r = is_event(rel.Parent)
-            if parcial_r:
-                return parcial_r
+        for rel_name in ['Inheritance', 'Using']:
+            for rel in filter_rel(frame, rel_name):
+                parcial_r = is_event(rel.Parent)
+                if parcial_r:
+                    return parcial_r
 
+def is_state(frame):
+    if frame and frame.name == 'State':
+        return frame
+    elif frame:
+        for rel_name in ['Inheritance', 'Using']:
+            for rel in filter_rel(frame, rel_name):
+                parcial_r = is_state(rel.Parent)
+                if parcial_r:
+                    return parcial_r
+            
 def filter_inheritance(frame):
     return [rel for rel in frame.frameRelations if rel.type.name == 'Inheritance' and frame.name == rel.Child.name]
+
+
+def filter_rel(frame, rel_name):
+    return [rel for rel in frame.frameRelations if rel.type.name == rel_name and frame.name == rel.Child.name]
 
 
 def frame_fes(frame):
@@ -334,7 +365,16 @@ def get_lemma_from_lexunit_name(lexunit_name, lang='por'):
 
 def get_all_frame_sentences(frame):
     return fn.exemplars(frame=frame)
-    
+
+event_or_state_frames = None
+
+def get_all_event_or_state_frames():
+    global event_or_state_frames
+    if not event_or_state_frames:
+        event_or_state_frames =  all_frames(is_event_or_state)
+    return event_or_state_frames
+
+
 def all_event_frames():
     lframes = []
     for frame in fn.frames():
@@ -342,6 +382,15 @@ def all_event_frames():
             if not is_event(frame): continue
             lframes.append(frame)
     return lframes
+
+def all_frames(is_filter_func=is_event):
+    lframes = []
+    for frame in fn.frames():
+        if frame:
+            if not is_filter_func(frame): continue
+            lframes.append(frame)
+    return lframes
+
         
 def lemma_frames(lang='por'):
     for frame in fn.frames():

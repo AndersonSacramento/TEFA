@@ -310,7 +310,7 @@ class FrameSelection(Frame):
         self.suggestions_queue.put(self.suggestions_frames)
 
     def load_all_frames_list(self):
-        for frame in sorted(fnutils.all_event_frames(), key=lambda f: f.name):
+        for frame in sorted(fnutils.get_all_event_or_state_frames(), key=lambda f: f.name):
             self.all_frames.append(frame)
         self.all_frames_queue.put(self.all_frames)
 
