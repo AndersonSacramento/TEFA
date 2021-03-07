@@ -1,5 +1,6 @@
 from scrolledlist import ScrolledList
 from sentenceannotation import SentenceAnnotation
+from guiutils import show_text_dialog
 from tkinter import *
 import _thread, queue, time
 import fnutils
@@ -107,6 +108,22 @@ class SentencesPanel(Frame):
         if self.focus_list:
             self.focus_list.select_previous()
 
+
+    def show_helper_dialog(self):
+        help_msg = """
+        1 : ir para lista anotar\n\n
+        2 : ir para lista anotando\n\n
+        3 : ir para lista anotada(s)\n\n
+        n : selecionar próxima sentença da lista\n\n
+        p : selecionar sentença anterior da lista\n\n
+        a : abrir janela de anotação para sentença seleciona - deve estar na lista anotando\n\n
+        seta-esquerda : mover sentença selecionada para lista à esquerda\n\n
+        seta-diretira : mover sentença selecionada para lista à direita\n\n
+        h : visualizar lista de teclas de atalho\n\n
+        """
+        show_text_dialog(self, 'Ajuda - painel de seleção de sentenças', help_msg, font=('times', 14))
+
+            
     def on_keyboard(self, event):
         pressed = event.keysym
 
@@ -119,6 +136,8 @@ class SentencesPanel(Frame):
             self.select_next_in_focus_list()
         elif pressed == 'p':
             self.select_previous_in_focus_list()
+        elif pressed == 'h':
+            self.show_helper_dialog()
         elif pressed == 'Down':
             self.select_next_in_focus_list()
         elif pressed == 'Up':

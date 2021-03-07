@@ -19,6 +19,9 @@ class ScrolledText(Frame):
         text.pack(side=LEFT, expand=YES, fill=BOTH)
         self.text = text
 
+    def config(self, **config):
+        self.text.config(**config)
+        
     def get_text_widget(self):
         return self.text
 

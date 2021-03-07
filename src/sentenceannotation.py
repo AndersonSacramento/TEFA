@@ -8,6 +8,7 @@ from tkinter.messagebox import askquestion
 import _thread, queue, time
 import fnutils
 from frameview import FrameView
+from guiutils import show_text_dialog
 from db import ArgANN
 from copy import copy
 
@@ -454,6 +455,8 @@ class SentenceAnnotation(Frame):
                 self.annotate_arg()
                 self.set_select_text_mode(False)
                 self.stop_select_text_mode()
+            elif pressed == 'h':
+                self.show_text_selection_mode_helper_dialog()
         elif self.is_list_mode():
             if pressed == 'a' or (self._is_ctrl_key(event) and pressed == 'a'):
                 self.set_list_mode(False)
@@ -472,6 +475,8 @@ class SentenceAnnotation(Frame):
             elif self.is_cancel_cmd(event):
                 self.stop_list_args_mode()
                 self.set_list_args_mode(False)
+            elif pressed == 'h':
+                self.show_list_args_mode_helper_dialog()
         elif self.is_delete_mode():
             if pressed == 'g':
                 self.set_delete_mode(False)
@@ -495,6 +500,8 @@ class SentenceAnnotation(Frame):
                 self.set_next_arg_ann_to_delete()
             elif pressed == 'p' or (self._is_ctrl_key(event) and pressed == 'p'):
                 self.set_previous_arg_ann_to_delete()
+            elif pressed == 'h':
+                self.show_delete_args_mode_helper_dialog()
         elif self.is_search_mode():
             if self._is_ctrl_key(event):
                 if  pressed == 'g':
@@ -507,6 +514,8 @@ class SentenceAnnotation(Frame):
                     self.frame_selection.select_previous_frame_all_list()
                 elif pressed == 'i':
                     self.frame_selection.view_info_current_frame()
+                elif pressed == 'h':
+                    self.show_search_mode_helper_dialog()
             elif  pressed == 'Return':
                 if self.frame_selection.select_event_type():
                     self.frame_selection.clear_search_frame()
@@ -535,6 +544,8 @@ class SentenceAnnotation(Frame):
                 self.frame_selection.select_next_frame_suggestion_list()
             elif pressed == 'p':
                 self.frame_selection.select_previous_frame_suggestion_list()
+            elif pressed == 'h':
+                self.show_frame_selection_mode_helper_dialog()
             elif self.is_cancel_cmd(event):
                 self.set_event_type_suggestion_mode(False)
             elif pressed == 'Return':
@@ -545,6 +556,8 @@ class SentenceAnnotation(Frame):
                 self.frame_selection.select_next_frame_all_list()
             elif pressed == 'p':
                 self.frame_selection.select_previous_frame_all_list()
+            elif pressed == 'h':
+                self.show_frame_selection_mode_helper_dialog()
             elif self.is_cancel_cmd(event):
                 self.set_event_type_all_mode(False)
             elif pressed == 'Return':
@@ -557,6 +570,8 @@ class SentenceAnnotation(Frame):
                 self.fe_selection.cycle_previous_selection_ann_fe()
             elif pressed == 'i':
                 self.show_cur_selected_fe_definition_dialog()
+            elif pressed == 'h':
+                self.show_fes_selection_mode_helper_dialog()
             elif self.is_cancel_cmd(event):
                 self.set_arg_fe_selection_mode(False)
                 self.hide_ann_frame()
@@ -568,10 +583,12 @@ class SentenceAnnotation(Frame):
                 self.fe_selection.cycle_previous_selection_all_fe()
             elif pressed == 'i':
                 self.show_cur_selected_fe_definition_dialog()
+            elif pressed == 'h':
+                self.show_fes_selection_mode_helper_dialog()
             elif self.is_cancel_cmd(event):
                 self.set_not_selected_fe_selection_mode(False)
                 self.hide_ann_frame()
-                self._print_quit__mode_msg('modo de selação de tipo do argumento') 
+                self._print_quit_mode_msg('modo de selação de tipo do argumento') 
         elif self._is_alt_key(event):
             if pressed == 'e':
                 self.start_not_selected_fe_selection_mode()
@@ -624,6 +641,8 @@ class SentenceAnnotation(Frame):
                 Frame.destroy(self.parent)
             elif pressed == 't':
                 self.frame_selection.cycle_combobox_trigger()
+            elif pressed == 'h':
+                self.show_main_helper_dialog()
 
         return "break"
 
@@ -877,6 +896,104 @@ class SentenceAnnotation(Frame):
             self.load_event_args_ann_tags()
             self.set_delete_arg_mode(False)
             self.stop_delete_arg_mode()
+
+
+    def show_main_helper_dialog(self):
+        help_msg = """
+        t : próximo evento da sentença \n\n
+        a : anotar argumento com o texto selecionado e tipo de FE atual \n\n
+        i : visualizar informações do tipo/frame do evento atual \n\n
+        h : visualizar atalhos do teclado para o modo atual\n\n
+        q : fechar janela de anotação da sentença\n\n
+        Ctrl-a : mover cursor para o início da sentença\n\n
+        Ctrl-e : mover cursor para o fim da sentença\n\n
+        Ctrl-f : mover cursor um caracter para frente
+        Ctrl-b : mover cursor um caracter para trás
+        Ctrl-s : inicia o modo de pesquisa de frame por nome\n\n
+        Ctrl-Space : inicia modo de seleção de texto via movimento do cursor\n\n
+        Ctrl-l a : inicia listagem de argumentos anotados \n\n
+        Ctrl-d a : inicia modo de exclusão de argumentos \n\n
+        Ctrl-d t : remove anotação do evento atual \n\n
+        Ctrl-t s : inicia modo de seleção de tipo/frame na lista de sugestões \n\n
+        Ctrl-t a : inicia modo de seleção de tipo/frame na lista de todos os frames \n\n
+        Alt-e : inicia modo de seleção de FEs não anotados \n\n
+        Alt-a : inicia modo de seleção de FEs já anotado \n\n
+        Alt-f : mover cursor uma palavra para frente\n\n
+        Alt-b : mover cursor uma palavra para trás\n\n
+        """
+        show_text_dialog(self, 'Ajuda', help_msg, font=('times', 14))
+
+
+    def show_search_mode_helper_dialog(self):
+        help_msg = """
+        Ctrl-h : visualizar lista de combinações de teclas de atalho\n\n 
+        Ctrl-g : sair do modo de busca de frames\n\n
+        Ctrl-n : selecionar próximo frame da lista de resultados\n\n
+        Ctrl-p : selecionar frame anterior da lista de resultados\n\n
+        Ctrl-i : visualizar informações do frame selecionado\n\n
+        enter : selecionar o frame como tipo do evento atual\n\n
+        """
+        show_text_dialog(self, 'Ajuda - modo de busca', help_msg, font=('times', 14))
+
+
+    def show_list_args_mode_helper_dialog(self):
+        help_msg = """
+        n : seleciona próximo argumento anotado\n\n
+        p : seleciona argumento anterior anotado\n\n
+        g : sair do modo de listagem de argumentos anotados\n\n
+        i : visualizar definição do tipo de FE do argumento selecionado\n\n
+        h : visualizar lista de teclas de atalho\n\n
+        """
+        show_text_dialog(self, 'Ajuda - modo listagem de argumentos', help_msg, font=('times', 14))
+
+
+    def show_fes_selection_mode_helper_dialog(self):
+        help_msg = """
+        g : sair do modo de seleção do tipo/FE do argumento\n\n
+        n : selecionar próximo FE da lista\n\n
+        p : selecionar FE anterior da lista \n\n
+        i : visualizar definição do FE atual\n\n
+        h : visualizar lista de teclas de atalho\n\n
+        """
+        show_text_dialog(self, 'Ajuda - modo seleção de FEs', help_msg, font=('times', 14))
+
+
+    def show_delete_args_mode_helper_dialog(self):
+        help_msg = """
+        g : sair do modo de exclusão de argumento\n\n
+        n : seleciona próximo argumento anotado\n\n
+        p : seleciona argumento anterior anotado\n\n
+        h : visualizar lista de teclas de atalho\n\n
+        enter : exclui argumento atual\n\n
+            """
+        show_text_dialog(self, 'Ajuda - modo exclusão de argumento', help_msg, font=('times', 14))
+
+
+    def show_frame_selection_mode_helper_dialog(self):
+        help_msg = """
+        g : sair do modo de seleção de tipo/frame de evento\n\n
+        n : selecionar próximo frame da lista\n\n
+        p : seleciona frame anterior da lista\n\n
+        h : visualizar lista de teclas de atalho\n\n
+        enter : selecionar frame como o tipo do evento atual\n\n 
+        """
+        show_text_dialog(self, 'Ajuda - modo seleção tipo/frame de evento', help_msg, font=('times', 14))
+
+    def show_text_selection_mode_helper_dialog(self):
+        help_msg = """
+        a : anotar seleção de texto com o tipo atual\n\n
+        g : sair do modo de seleção de texto\n\n
+        h : visualizar lista de teclas de atalho\n\n
+        Ctrl-a : mover cursor para o início da sentença\n\n
+        Ctrl-e : mover cursor para o fim da sentença\n\n
+        Ctrl-f : mover cursor um caracter para frente\n\n
+        Ctrl-b : mover cursor um caracter para trás\n\n
+        Alt-f : mover cursor uma palavra para frente\n\n
+        Alt-b : mover cursor uma palavra para trás\n\n
+        Alt-a : seleciona próximo tipo de FE na lista de argumentos\n\n
+        Alt-e : seleciona próximo tipo de FE na lista de não anotados\n\n
+        """
+        show_text_dialog(self, 'Ajuda - modo de seleção de texto', help_msg, font=('times', 14))
         
     # def ask_delete_cur_event_type(self):
     #     ans = askquestion('Pergunta', 'Você confirma a remoção do tipo do evento?', parent=self)
