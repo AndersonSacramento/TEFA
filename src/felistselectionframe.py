@@ -1,5 +1,5 @@
 from tkinter import *
-
+import fnutils
 import _thread, queue, time
 
 
@@ -27,7 +27,7 @@ class FEListSelectionFrame(Frame):
     # def _get_next_fe_name(self, fe_name):
     #     i = 0
     #     for fe_color in self.fes_colors:
-    #         if fe_color.fe.name == fe_name:
+    #         if fnutils.fe_name_type(fe_color.fe) == fe_name:
     #             break
     #         i += 1
     #     if i+1 < len(self.fes_colors):
@@ -56,7 +56,7 @@ class FEListSelectionFrame(Frame):
         return self._get_step_fe_name(fe_name, lambda i : i+1)
     # i = 0
     # for fe_color in self.fes_colors:
-    #     if fe_color.fe.name == fe_name:
+    #     if fnutils.fe_name_type(fe_color.fe) == fe_name:
     #         break
     #     i += 1
     # if i+1 < len(self.fes_colors):
@@ -67,13 +67,13 @@ class FEListSelectionFrame(Frame):
     def _get_step_fe_name(self, fe_name, step_func):
         i = 0
         for fe_color in self.fes_colors:
-            if fe_color.fe.name == fe_name:
+            if fnutils.fe_name_type(fe_color.fe) == fe_name:
                 break
             i += 1
 
         i = step_func(i)
         i = i % len(self.fes_colors)
-        return self.fes_colors[i].fe.name
+        return fnutils.fe_name_type(self.fes_colors[i].fe)
         
 
     def on_press_radio_arg(self):
@@ -90,7 +90,7 @@ class FEListSelectionFrame(Frame):
         fe_name = self.var_fes.get()
         if self.fes:
             for fe_color in self.fes_colors:
-                if fe_color.fe.name == fe_name:
+                if fnutils.fe_name_type(fe_color.fe) == fe_name:
                     return (fe_color.fe, fe_color.color)
             return None
         else:
@@ -117,7 +117,7 @@ class FEListSelectionFrame(Frame):
         for i, fe_color in enumerate(self.fes_colors):
             row = Frame(self)
             row_type = Frame(row)
-            rad_type = Radiobutton(row_type, text=fe_color.fe.name, value=fe_color.fe.name, variable=self.var_fes, command=self.on_press_radio_arg, bg=fe_color.color)
+            rad_type = Radiobutton(row_type, text=fnutils.fe_name_type(fe_color.fe), value=fnutils.fe_name_type(fe_color.fe), variable=self.var_fes, command=self.on_press_radio_arg, bg=fe_color.color)
             rad_type.pack(side=TOP)
             row_type.pack(side=TOP, expand=YES, fill=X)
             

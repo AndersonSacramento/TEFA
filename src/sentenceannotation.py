@@ -662,7 +662,7 @@ class SentenceAnnotation(Frame):
     def set_fe_arg_ann_label(self, arg_ann):
         fe_color = self.fe_selection.get_fe_color(arg_ann.event_fe_id)
         fe = self.fe_selection.get_arg_fe(arg_ann.event_fe_id)
-        self.fe_arg_list_var.set(fe.name)
+        self.fe_arg_list_var.set(fnutils.fe_name_type(fe))
         self.txt_arg_fe_def.delete('1.0', END)
         self.txt_arg_fe_def.insert('1.0', fe.definition)
         self.label_arg_fe.config(background=fe_color)
@@ -672,7 +672,7 @@ class SentenceAnnotation(Frame):
         output = self.fe_selection.get_radio_fe_and_color()
         if output:
             fe, fe_color = output
-            self.fe_arg_var.set(fe.name)
+            self.fe_arg_var.set(fnutils.fe_name_type(fe))
             self.txt_fe_def.delete('1.0', END)
             self.txt_fe_def.insert('1.0', fe.definition)
             self.label_fe.config(background=fe_color)
@@ -871,7 +871,7 @@ class SentenceAnnotation(Frame):
 
     def show_fe_definition_dialog(self, fe, fe_color):
         win = Toplevel()
-        win.title(fe.name)
+        win.title(fnutils.fe_name_type(fe))
         msg = Message(win, text=fe.definition)
         msg.config(bg=fe_color, font=('times', 16, 'italic'))
         msg.pack(fill=X, expand=YES)

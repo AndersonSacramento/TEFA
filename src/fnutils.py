@@ -392,7 +392,10 @@ def all_frames(is_filter_func=is_event):
             lframes.append(frame)
     return lframes
 
-        
+
+def fe_name_type(fe):
+    return '%s <<%s>>' % (fe.name, fe.coreType)
+
 def lemma_frames(lang='por'):
     for frame in fn.frames():
         if not is_event(frame): continue
