@@ -902,99 +902,99 @@ class SentenceAnnotation(Frame):
 
     def show_main_helper_dialog(self):
         help_msg = """
-        t : próximo evento da sentença \n\n
-        a : anotar argumento com o texto selecionado e tipo de FE atual \n\n
-        i : visualizar informações do tipo/frame do evento atual \n\n
-        h : visualizar atalhos do teclado para o modo atual\n\n
-        q : fechar janela de anotação da sentença\n\n
-        Ctrl-a : mover cursor para o início da sentença\n\n
-        Ctrl-e : mover cursor para o fim da sentença\n\n
+        t : próximo evento da sentença 
+        a : anotar argumento com o texto selecionado e tipo de FE atual 
+        i : visualizar informações do tipo/frame do evento atual 
+        h : visualizar atalhos do teclado para o modo atual
+        q : fechar janela de anotação da sentença
+        Ctrl-a : mover cursor para o início da sentença
+        Ctrl-e : mover cursor para o fim da sentença
         Ctrl-f : mover cursor um caracter para frente
         Ctrl-b : mover cursor um caracter para trás
-        Ctrl-s : inicia o modo de pesquisa de frame por nome\n\n
-        Ctrl-Space : inicia modo de seleção de texto via movimento do cursor\n\n
-        Ctrl-l a : inicia listagem de argumentos anotados \n\n
-        Ctrl-d a : inicia modo de exclusão de argumentos \n\n
-        Ctrl-d t : remove anotação do evento atual \n\n
-        Ctrl-t s : inicia modo de seleção de tipo/frame na lista de sugestões \n\n
-        Ctrl-t a : inicia modo de seleção de tipo/frame na lista de todos os frames \n\n
-        Alt-e : inicia modo de seleção de FEs não anotados \n\n
-        Alt-a : inicia modo de seleção de FEs já anotado \n\n
-        Alt-f : mover cursor uma palavra para frente\n\n
-        Alt-b : mover cursor uma palavra para trás\n\n
+        Ctrl-s : inicia o modo de pesquisa de frame por nome
+        Ctrl-Space : inicia modo de seleção de texto via movimento do cursor
+        Ctrl-l a : inicia listagem de argumentos anotados 
+        Ctrl-d a : inicia modo de exclusão de argumentos 
+        Ctrl-d t : remove anotação do evento atual 
+        Ctrl-t s : inicia modo de seleção de tipo/frame na lista de sugestões 
+        Ctrl-t a : inicia modo de seleção de tipo/frame na lista de todos os frames 
+        Alt-e : inicia modo de seleção de FEs não anotados 
+        Alt-a : inicia modo de seleção de FEs já anotado 
+        Alt-f : mover cursor uma palavra para frente
+        Alt-b : mover cursor uma palavra para trás
         """
         show_text_dialog(self, 'Ajuda', help_msg, font=('times', 14))
 
 
     def show_search_mode_helper_dialog(self):
         help_msg = """
-        Ctrl-h : visualizar lista de combinações de teclas de atalho\n\n 
-        Ctrl-g : sair do modo de busca de frames\n\n
-        Ctrl-n : selecionar próximo frame da lista de resultados\n\n
-        Ctrl-p : selecionar frame anterior da lista de resultados\n\n
-        Ctrl-i : visualizar informações do frame selecionado\n\n
-        enter : selecionar o frame como tipo do evento atual\n\n
+        Ctrl-h : visualizar lista de combinações de teclas de atalho 
+        Ctrl-g : sair do modo de busca de frames
+        Ctrl-n : selecionar próximo frame da lista de resultados
+        Ctrl-p : selecionar frame anterior da lista de resultados
+        Ctrl-i : visualizar informações do frame selecionado
+        enter : selecionar o frame como tipo do evento atual
         """
         show_text_dialog(self, 'Ajuda - modo de busca', help_msg, font=('times', 14))
 
 
     def show_list_args_mode_helper_dialog(self):
         help_msg = """
-        n : seleciona próximo argumento anotado\n\n
-        p : seleciona argumento anterior anotado\n\n
-        g : sair do modo de listagem de argumentos anotados\n\n
-        i : visualizar definição do tipo de FE do argumento selecionado\n\n
-        h : visualizar lista de teclas de atalho\n\n
+        n : seleciona próximo argumento anotado
+        p : seleciona argumento anterior anotado
+        g : sair do modo de listagem de argumentos anotados
+        i : visualizar definição do tipo de FE do argumento selecionado
+        h : visualizar lista de teclas de atalho
         """
         show_text_dialog(self, 'Ajuda - modo listagem de argumentos', help_msg, font=('times', 14))
 
 
     def show_fes_selection_mode_helper_dialog(self):
         help_msg = """
-        g : sair do modo de seleção do tipo/FE do argumento\n\n
-        n : selecionar próximo FE da lista\n\n
-        p : selecionar FE anterior da lista \n\n
-        i : visualizar definição do FE atual\n\n
-        h : visualizar lista de teclas de atalho\n\n
+        g : sair do modo de seleção do tipo/FE do argumento
+        n : selecionar próximo FE da lista
+        p : selecionar FE anterior da lista 
+        i : visualizar definição do FE atual
+        h : visualizar lista de teclas de atalho
         """
         show_text_dialog(self, 'Ajuda - modo seleção de FEs', help_msg, font=('times', 14))
 
 
     def show_delete_args_mode_helper_dialog(self):
         help_msg = """
-        g : sair do modo de exclusão de argumento\n\n
-        n : seleciona próximo argumento anotado\n\n
-        p : seleciona argumento anterior anotado\n\n
-        h : visualizar lista de teclas de atalho\n\n
-        enter : exclui argumento atual\n\n
+        g : sair do modo de exclusão de argumento
+        n : seleciona próximo argumento anotado
+        p : seleciona argumento anterior anotado
+        h : visualizar lista de teclas de atalho
+        enter : exclui argumento atual
             """
         show_text_dialog(self, 'Ajuda - modo exclusão de argumento', help_msg, font=('times', 14))
 
 
     def show_frame_selection_mode_helper_dialog(self):
         help_msg = """
-        i : visualizar informações do frame selecionado\n\n
-        g : sair do modo de seleção de tipo/frame de evento\n\n
-        n : selecionar próximo frame da lista\n\n
-        p : seleciona frame anterior da lista\n\n
-        h : visualizar lista de teclas de atalho\n\n
-        enter : selecionar frame como o tipo do evento atual\n\n 
+        i : visualizar informações do frame selecionado
+        g : sair do modo de seleção de tipo/frame de evento
+        n : selecionar próximo frame da lista
+        p : seleciona frame anterior da lista
+        h : visualizar lista de teclas de atalho
+        enter : selecionar frame como o tipo do evento atual 
         """
         show_text_dialog(self, 'Ajuda - modo seleção tipo/frame de evento', help_msg, font=('times', 14))
 
     def show_text_selection_mode_helper_dialog(self):
         help_msg = """
-        a : anotar seleção de texto com o tipo atual\n\n
-        g : sair do modo de seleção de texto\n\n
-        h : visualizar lista de teclas de atalho\n\n
-        Ctrl-a : mover cursor para o início da sentença\n\n
-        Ctrl-e : mover cursor para o fim da sentença\n\n
-        Ctrl-f : mover cursor um caracter para frente\n\n
-        Ctrl-b : mover cursor um caracter para trás\n\n
-        Alt-f : mover cursor uma palavra para frente\n\n
-        Alt-b : mover cursor uma palavra para trás\n\n
-        Alt-a : seleciona próximo tipo de FE na lista de argumentos\n\n
-        Alt-e : seleciona próximo tipo de FE na lista de não anotados\n\n
+        a : anotar seleção de texto com o tipo atual
+        g : sair do modo de seleção de texto
+        h : visualizar lista de teclas de atalho
+        Ctrl-a : mover cursor para o início da sentença
+        Ctrl-e : mover cursor para o fim da sentença
+        Ctrl-f : mover cursor um caracter para frente
+        Ctrl-b : mover cursor um caracter para trás
+        Alt-f : mover cursor uma palavra para frente
+        Alt-b : mover cursor uma palavra para trás
+        Alt-a : seleciona próximo tipo de FE na lista de argumentos
+        Alt-e : seleciona próximo tipo de FE na lista de não anotados
         """
         show_text_dialog(self, 'Ajuda - modo de seleção de texto', help_msg, font=('times', 14))
         

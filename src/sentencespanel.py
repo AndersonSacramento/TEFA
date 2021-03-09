@@ -111,15 +111,15 @@ class SentencesPanel(Frame):
 
     def show_helper_dialog(self):
         help_msg = """
-        1 : ir para lista anotar\n\n
-        2 : ir para lista anotando\n\n
-        3 : ir para lista anotada(s)\n\n
-        n : selecionar próxima sentença da lista\n\n
-        p : selecionar sentença anterior da lista\n\n
-        a : abrir janela de anotação para sentença seleciona - deve estar na lista anotando\n\n
-        seta-esquerda : mover sentença selecionada para lista à esquerda\n\n
-        seta-diretira : mover sentença selecionada para lista à direita\n\n
-        h : visualizar lista de teclas de atalho\n\n
+        1 : ir para lista anotar
+        2 : ir para lista anotando
+        3 : ir para lista anotada(s)
+        n : selecionar próxima sentença da lista
+        p : selecionar sentença anterior da lista
+        a : abrir janela de anotação para sentença seleciona - deve estar na lista anotando
+        seta-esquerda : mover sentença selecionada para lista à esquerda
+        seta-diretira : mover sentença selecionada para lista à direita
+        h : visualizar lista de teclas de atalho
         """
         show_text_dialog(self, 'Ajuda - painel de seleção de sentenças', help_msg, font=('times', 14))
 
