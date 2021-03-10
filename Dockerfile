@@ -10,4 +10,4 @@ RUN python -c "import nltk; nltk.download('framenet_v17')"
 
 COPY src/ .
 
-CMD ["python", "./mainpanel.py"]
+ENTRYPOINT ["python", "./mainpanel.py"]

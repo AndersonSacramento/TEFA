@@ -10,8 +10,8 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timezone
 import uuid
 
-from db import SentenceAnnotator, Annotator, LemmaFN, EventTBPT, TimeExpTBPT, Sentence, EventANN, ArgANN, ValArgANN, ValEventANN, engine
-
+from db import SentenceAnnotator, Annotator, LemmaFN, EventTBPT, TimeExpTBPT, Sentence, EventANN, ArgANN
+import db
 
 from contextlib import contextmanager
 
@@ -29,8 +29,14 @@ def session_scope():
         session.close()
 
 
-def create_session():
+def create_session(dbpath='lome_tbpt.db'):
     global Session
+    global engine
+    
+    engine = create_engine('sqlite:///%s' % (dbpath),  connect_args={'check_same_thread': False}, echo=False)
+
+    db.Base.metadata.create_all(engine)
+    
     Session = sessionmaker(bind=engine, expire_on_commit=False)
     get_all_event_or_state_frames()
 
@@ -417,7 +423,7 @@ def fe_name_type(fe):
 
 def lemma_frames(lang='por'):
     for frame in fn.frames():
-        if not is_event(frame): continue
+        if not is_event_or_state(frame): continue
         for lexunit in frame.lexUnit.values():
             print(lexunit.name)
             _ , pos = lexunit.name.split('.')

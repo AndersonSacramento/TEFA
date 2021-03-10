@@ -3,7 +3,7 @@ from loginpanel import LoginPanel
 from tkinter import *
 import _thread, queue, time
 import fnutils
-
+import sys
 
 class MainPanel(Frame):
 
@@ -42,7 +42,10 @@ if __name__ == '__main__':
                'doing':{'title': 'Anotando'},# 'data':[]},
                'done': {'title': 'Anotada'},#, 'data':['sent0'] },
                'annotators':{'title': 'Anotadores'}}#'data':['ander@mail.com', 'silva@gmail.com']}}
-    fnutils.create_session()
+    if len(sys.argv) > 1:
+        fnutils.create_session(dbpath=sys.argv[1])
+    else:
+        fnutils.create_session()
     root = Tk()
     root.title('TEFA')
     main_panel = MainPanel(options, parent=root)

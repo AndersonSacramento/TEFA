@@ -147,24 +147,24 @@ class ArgANN(Base):
 
 
 
-class ValEventANN(Base):
-    __tablename__ = 'val_event_ann'
+# class ValEventANN(Base):
+#     __tablename__ = 'val_event_ann'
 
-    event_ann_id = Column(String, ForeignKey('event_ann.id'), primary_key=True)
-    annotator_id = Column(String, ForeignKey('annotator.email'), primary_key=True)
-    status_type = Column(String)
+#     event_ann_id = Column(String, ForeignKey('event_ann.id'), primary_key=True)
+#     annotator_id = Column(String, ForeignKey('annotator.email'), primary_key=True)
+#     status_type = Column(String)
 
-    def is_wrong(self):
-        return self.status_type == 'wrong'
+#     def is_wrong(self):
+#         return self.status_type == 'wrong'
     
-class ValArgANN(Base):
-    __tablename__ = 'val_arg_ann'
+# class ValArgANN(Base):
+#     __tablename__ = 'val_arg_ann'
 
-    event_ann_id = Column(String, ForeignKey('event_ann.id'), primary_key=True)
-    annotator_id = Column(String, ForeignKey('annotator.email'), primary_key=True)
-    event_fe_id = Column(String, ForeignKey('arg_ann.event_fe_id'), primary_key=True)
-    status_span = Column(String)
-    status_type = Column(String)
+#     event_ann_id = Column(String, ForeignKey('event_ann.id'), primary_key=True)
+#     annotator_id = Column(String, ForeignKey('annotator.email'), primary_key=True)
+#     event_fe_id = Column(String, ForeignKey('arg_ann.event_fe_id'), primary_key=True)
+#     status_span = Column(String)
+#     status_type = Column(String)
     
 
 class Annotator(Base):
