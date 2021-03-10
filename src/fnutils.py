@@ -279,6 +279,8 @@ def load_fn_events_lemmas():
 
 def is_event_or_state(frame):
     if frame:
+        if  is_entity(frame):
+            return False
         if frame.name in ['Event', 'State']:
             return frame
         for rel_name in ['Inheritance', 'Using']:
@@ -287,7 +289,22 @@ def is_event_or_state(frame):
                 if parcial_r:
                     return parcial_r
 
-
+def is_entity(frame):
+    if frame:
+        if frame.name == 'Entity':
+            return True
+        for rel in filter_rel(frame, 'Inheritance'):
+            parcial_r = is_entity(rel.Parent)
+            if parcial_r:
+                return parcial_r 
+def is_instance(frame):
+    if frame:
+        if frame.name == 'Instance':
+            return True
+        for rel in filter_rel(frame, 'Inheritance'):
+            parcial_r = is_entity(rel.Parent)
+            if parcial_r:
+                return parcial_r             
 
 def is_event(frame):
     if frame and frame.name == 'Event':
@@ -369,8 +386,10 @@ def get_all_frame_sentences(frame):
 
 event_or_state_frames = None
 
-def get_all_event_or_state_frames():
+def get_all_event_or_state_frames(clear_cache=False):
     global event_or_state_frames
+    if clear_cache:
+        event_or_state_frames = []
     if not event_or_state_frames:
         event_or_state_frames =  all_frames(is_event_or_state)
     return event_or_state_frames
