@@ -213,7 +213,7 @@ class FrameSelection(Frame):
         win.geometry("+{}+{}".format(x_left, y_top))
         
         #win.focus_set()
-        #win.grab_set()
+        win.grab_set()
         win.wait_window()
         
     def trigger_change_handler(self, event):

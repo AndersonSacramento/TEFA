@@ -142,7 +142,12 @@ class SentenceAnnotation(Frame):
             if frame:
                 win = Toplevel()
                 frame_view = FrameView({'frame':frame}, win)
-                win.focus_set()
+                win.update()
+                x_left = int(self.winfo_screenwidth()/2 - win.winfo_width()/2)
+                y_top = int(self.winfo_screenheight()/2 - win.winfo_height()/2)
+                        
+                win.geometry("+{}+{}".format(x_left, y_top))
+                #win.focus_set()
                 win.grab_set()
                 win.wait_window()
 

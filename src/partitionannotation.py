@@ -63,7 +63,7 @@ def create_partition(dbpath, config, common_percent=10):
     common_events = all_events[:end_at]
 
     db_name = dbpath.split('.db')[0]
-    common_engine = create_engine('sqlite:///%s-common.db' % db_name, echo=True)
+    common_engine = create_engine('sqlite:///%s_common.db' % db_name, echo=True)
     SessionCommon = sessionmaker(bind=common_engine)
     common_session = SessionCommon()
     Base.metadata.create_all(common_engine)
@@ -89,7 +89,7 @@ def create_partition(dbpath, config, common_percent=10):
             end_at = events_len
             
         femail = email.split('@')[0]
-        cur_engine = create_engine('sqlite:///%s-%s.db' % (db_name, femail), echo=True)
+        cur_engine = create_engine('sqlite:///%s_%s.db' % (db_name, femail), echo=True)
         CurSession = sessionmaker(bind=cur_engine)
         cur_session =  CurSession()
         Base.metadata.create_all(cur_engine)

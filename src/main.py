@@ -268,6 +268,18 @@ def load_timebankpt_data(corpus_dir):
                 session.add(event_tbpt)
             session.commit()
 
+def delete_all_not_annotated_events():
+    with session_scope() as session:
+        for event_tbpt  in session.query(EventTBPT).all():
+            event_ann = session.query(EventANN).filter_by(event_id=event_tbpt.id).first()
+            if not event_ann:
+                session.query(EventTBPT).filter_by(id=event_tbpt.id).delete(synchronize_session='fetch')
+        for sentence in session.query(Sentence).all():
+            event_tbpt = session.query(EventTBPT).filter_by(sentence_id=sentence.id).first()
+            if not event_tbpt:
+                session.query(Sentence).filter_by(id=sentence.id).delete(synchronize_session='fetch')
+                
+    
             
 def print_entity_and_mentions(comm):
     for entitySet in lun(comm.entitySetList):
