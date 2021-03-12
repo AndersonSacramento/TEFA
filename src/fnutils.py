@@ -400,6 +400,8 @@ def get_all_event_or_state_frames(clear_cache=False):
         event_or_state_frames =  all_frames(is_event_or_state)
     return event_or_state_frames
 
+def get_lexunits(frame):
+    return list(frame.lexUnit.keys())
 
 def all_event_frames():
     lframes = []

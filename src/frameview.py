@@ -1,7 +1,7 @@
 from scrolledtext import ScrolledText
 from tkinter import *
 import fnutils
-
+import _thread, queue, time
 
 class FrameView(Frame):
 
@@ -11,6 +11,7 @@ class FrameView(Frame):
         self.pack(expand=YES, fill=BOTH)
         self.fn_frame = options['frame']
         self.frame_sentences = []
+        self.sentences_queue = queue.Queue()
         self.options = options
         self.make_widgets()
 
@@ -29,6 +30,7 @@ class FrameView(Frame):
         Pressione e : Visualizar todos os elementos do frame\n\n
         Pressione c : Visualizar os elementos core do frame\n\n
         Pressione p : Visualizar os elementos peripheral do frame\n\n
+        Pressione l : Visualizar lista de unidades lexicais\n\n
         Pressione q : Fechar janela de visualização do frame\n\n
         Pressione h : Visualizar lista de teclas e funções\n\n
         """
@@ -49,7 +51,8 @@ class FrameView(Frame):
             self.print_frame_definition()
         elif pressed == 's':
             if not self.frame_sentences:
-                self.frame_sentences = fnutils.get_all_frame_sentences(self.fn_frame)
+                _thread.start_new_thread(self.load_sentences, ())
+                self.update_sentence_loading()
                 self.sentence_index = 0
             self.print_next_frame_sentence()
         elif pressed == 'q':
@@ -60,6 +63,8 @@ class FrameView(Frame):
             self.print_core_fes()
         elif pressed == 'p':
             self.print_peripheral_fes()
+        elif pressed == 'l':
+            self.print_all_lexunits()
         elif pressed == 'h':
             self.key_bind_help()
         elif pressed == 'Prior':
@@ -78,6 +83,8 @@ class FrameView(Frame):
 
 
 
+    def print_all_lexunits(self):
+        self.scroll_text.settext(str(fnutils.get_lexunits(self.fn_frame)))
         
     def print_all_frame_info(self):
         self.scroll_text.settext(str(self.fn_frame))
@@ -91,8 +98,21 @@ class FrameView(Frame):
                 self.sentence_index = 0
             self.scroll_text.settext(str(self.frame_sentences[self.sentence_index]))
             self.sentence_index += 1
-        
 
+    def load_sentences(self):
+        self.sentences_queue.put(fnutils.get_all_frame_sentences(self.fn_frame))
+    
+
+    def update_sentence_loading(self):
+        try:
+            self.frame_sentences = self.sentences_queue.get(block=False)
+        except queue.Empty:
+            self.scroll_text.settext('Carregando...')
+            self.after(10, self.update_sentence_loading)
+        else:
+            self.print_next_frame_sentence()
+
+            
     def print_fe(self, fe):
         return '[name] %s \n [definition]\n\t%s\n\n' % (fe.name, fe.definition)
 
