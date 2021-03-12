@@ -4,8 +4,7 @@ __pycache__/
 *$py.class
 
 # data files
-data/TimeBankPT/
-data/ti
+data/*
 data/output-aida/
 run_env
 /src/*.db
