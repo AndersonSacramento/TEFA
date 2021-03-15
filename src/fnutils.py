@@ -310,7 +310,11 @@ def is_instance(frame):
         for rel in filter_rel(frame, 'Inheritance'):
             parcial_r = is_entity(rel.Parent)
             if parcial_r:
-                return parcial_r             
+                return parcial_r
+            
+def has_place_or_time(frame):
+    fes_names = list(frame.FE.keys())
+    return 'Place' in fes_names or 'Time' in fes_names
 
 def is_event(frame):
     if frame and frame.name == 'Event':
@@ -390,15 +394,19 @@ def get_lemma_from_lexunit_name(lexunit_name, lang='por'):
 def get_all_frame_sentences(frame):
     return fn.exemplars(frame=frame)
 
-event_or_state_frames = None
+all_frames_list = None
 
 def get_all_event_or_state_frames(clear_cache=False):
-    global event_or_state_frames
+    global all_frames_list
     if clear_cache:
-        event_or_state_frames = []
-    if not event_or_state_frames:
+        all_frames_list = []
+    if not all_frames_list:
+        entity_frames = all_frames(is_entity)
+        place_or_time_frames = all_frames(has_place_or_time)
         event_or_state_frames =  all_frames(is_event_or_state)
-    return event_or_state_frames
+        all_frames_list = [f for f in place_or_time_frames if f not in event_or_state_frames and f not in entity_frames]
+        
+    return all_frames_list
 
 def get_lexunits(frame):
     return list(frame.lexUnit.keys())
@@ -411,7 +419,7 @@ def all_event_frames():
             lframes.append(frame)
     return lframes
 
-def all_frames(is_filter_func=is_event):
+def all_frames(is_filter_func=lambda f: f):
     lframes = []
     for frame in fn.frames():
         if frame:
