@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 #import timebankpttoolkit.timebankptcorpus as timebankpt
 from datetime import datetime, timezone
 import uuid
-
+import os.path
 from db import SentenceAnnotator, Annotator, LemmaFN, EventTBPT, TimeExpTBPT, Sentence, EventANN, ArgANN
 import db
 
@@ -401,10 +401,17 @@ def get_all_event_or_state_frames(clear_cache=False):
     if clear_cache:
         all_frames_list = []
     if not all_frames_list:
-        entity_frames = all_frames(is_entity)
-        place_or_time_frames = all_frames(has_place_or_time)
-        event_or_state_frames =  all_frames(is_event_or_state)
-        all_frames_list = [f for f in place_or_time_frames if f not in event_or_state_frames and f not in entity_frames]
+        if os.path.isfile('all_frames.txt'):
+            all_frames_name = []
+            with open('all_frames.txt') as infile:
+                for line in infile:
+                    all_frames_name.append(line.rstrip())
+            all_frames_list = [f for f in fn.frames() if f.name in all_frames_name]
+        else:
+            entity_frames = all_frames(is_entity)
+            place_or_time_frames = all_frames(has_place_or_time)
+            event_or_state_frames =  all_frames(is_event_or_state)
+            all_frames_list = [f for f in place_or_time_frames if f not in event_or_state_frames and f not in entity_frames] + event_or_state_frames
         
     return all_frames_list
 

@@ -118,6 +118,7 @@ class SentenceAnnotation(Frame):
         self.frame_selection.set_event_ann_type_selection_handler(self.event_type_selection_handler)
         self.frame_selection.set_event_ann_type_remove_handler(self.event_ann_type_remove_handler)
         self.frame_selection.set_binding_key_press(lambda e: self.on_keyboard(e))
+        self.frame_selection.set_view_frame_info_handler(self.load_view_frame_info)
         #self.frame_selection.set_event_val_handler(self.event_val_handler)
         
 

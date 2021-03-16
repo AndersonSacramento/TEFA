@@ -183,7 +183,7 @@ class SentencesPanel(Frame):
             w, h = self.winfo_screenwidth(), self.winfo_screenheight()
             win.geometry("%dx%d+0+0" % (w, h))
             win.focus_set()
-            win.grab_set()
+            #win.grab_set()
             win.wait_window()
 
     

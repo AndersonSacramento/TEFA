@@ -64,19 +64,31 @@ class FrameSelection(Frame):
         self.triggers_combo.bind("<<ComboboxSelected>>", self.trigger_change_handler)
 
         row_type = Frame(self)
+
         
         self.var_event_type = StringVar()
         self.var_event_type.set('Tipo:')
         label = Label(row_type, font=('times', 18))
-        label.pack(side=LEFT)
+        label.pack(side=LEFT, fill=X)
         label.config(textvariable=self.var_event_type)
 
 
-        self.igm = PhotoImage(file="imgs/remove_icon.gif")
-        self.btn_remove_type = Button(row_type, image=self.igm, command=self.remove_event_type_handler)
+        self.img_info = PhotoImage(file="imgs/info-18px.gif")
+        self.btn_info = Button(row_type, image=self.img_info, command=self.view_frame_info_handler)
+        #self.btn_info.config(height=18, width=18)
+        self.btn_info.place(bordermode=OUTSIDE, height=18, width=18)
+        self.btn_info.pack(side=LEFT, expand=YES, anchor=W)
+        
+        
+        self.img_del = PhotoImage(file="imgs/remove_icon.gif")
+        self.btn_remove_type = Button(row_type, image=self.img_del, command=self.remove_event_type_handler)
         self.btn_remove_type.pack_forget()
 
         row_type.pack(side=TOP, expand=YES, fill=X)
+        
+
+
+
         
 
         print('Options here %s' % options)
@@ -155,7 +167,15 @@ class FrameSelection(Frame):
     #     print('type ans %s' % ans)
     #     if self.event_val_handler:
     #         self.event_val_handler(ValEventANN(status_type=ans))
-        
+
+
+    def view_frame_info_handler(self):
+        if self.handler_view_frame_info:
+            self.handler_view_frame_info()
+
+            
+    def set_view_frame_info_handler(self, fn):
+        self.handler_view_frame_info = fn
 
     def set_event_val_handler(self, func):
         self.event_val_handler = func
