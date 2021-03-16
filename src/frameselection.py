@@ -217,7 +217,8 @@ class FrameSelection(Frame):
             self.load_view_frame_info(frame)
 
     def event_view_frame_all(self, i, s):
-        frame = self.all_frames[i]
+        frames = self.search_results if self.search_results else self.all_frames
+        frame = frames[i]
         if frame:
             self.load_view_frame_info(frame)
             

@@ -102,7 +102,8 @@ class SentenceAnnotation(Frame):
         self.fe_selection = FESelection(options, parent=left_frame)
         self.fe_selection.pack(side=TOP, anchor=SW)
         self.fe_selection.set_arg_ann_remove_handler(self.ask_delete_cur_arg)#self.arg_ann_remove_handler)
-        self.fe_selection.set_on_fe_selection_handler(self.set_fe_arg_label)
+        self.fe_selection.set_on_fe_selected_handler(self.activate_selected)
+        self.fe_selection.set_on_fe_not_selected_handler(self.activate_not_selected)
 
         #self.fe_selection.set_arg_val_handler(self.arg_val_handler)
         
@@ -152,6 +153,16 @@ class SentenceAnnotation(Frame):
                 win.grab_set()
                 win.wait_window()
 
+    def stop_arg_fe_selection_mode(self):
+        self.set_arg_fe_selection_mode(False)
+        self.hide_ann_frame()
+        self._print_quit_mode_msg('modo de selação de tipo do argumento')
+
+    def stop_is_not_selected_fe_selection_mode(self):
+        self.set_not_selected_fe_selection_mode(False)
+        self.hide_ann_frame()
+        self._print_quit_mode_msg('modo de selação de tipo do argumento') 
+                                               
         
     def load_content(self, options):
         _thread.start_new_thread(self.load_sentence, (options['sentence_id'], options['annotator_id']))
@@ -580,10 +591,13 @@ class SentenceAnnotation(Frame):
                 self.show_cur_selected_fe_definition_dialog()
             elif pressed == 'h':
                 self.show_fes_selection_mode_helper_dialog()
+            elif pressed == 'a':
+                self.annotate_arg()
+            elif self._is_alt_key(event) and pressed == 'e':
+                self.stop_arg_fe_selection_mode()
+                self.start_not_selected_fe_selection_mode()
             elif self.is_cancel_cmd(event):
-                self.set_arg_fe_selection_mode(False)
-                self.hide_ann_frame()
-                self._print_quit__mode_msg('modo de selação de tipo do argumento') 
+                self.stop_arg_fe_selection_mode()
         elif self.is_not_selected_fe_selection_mode():
             if pressed == 'n':
                 self.fe_selection.cycle_next_selection_all_fe()
@@ -593,10 +607,13 @@ class SentenceAnnotation(Frame):
                 self.show_cur_selected_fe_definition_dialog()
             elif pressed == 'h':
                 self.show_fes_selection_mode_helper_dialog()
+            elif self._is_alt_key(event) and pressed == 'a':
+                self.stop_is_not_selected_fe_selection_mode()
+                self.start_arg_fe_selection_mode()
+            elif pressed == 'a':
+                self.annotate_arg()
             elif self.is_cancel_cmd(event):
-                self.set_not_selected_fe_selection_mode(False)
-                self.hide_ann_frame()
-                self._print_quit_mode_msg('modo de selação de tipo do argumento') 
+                self.stop_is_not_selected_fe_selection_mode()
         elif self._is_alt_key(event):
             if pressed == 'e':
                 self.start_not_selected_fe_selection_mode()
@@ -672,7 +689,16 @@ class SentenceAnnotation(Frame):
         self.txt_arg_fe_def.delete('1.0', END)
         self.txt_arg_fe_def.insert('1.0', fe.definition)
         self.label_arg_fe.config(background=fe_color)
-    
+
+    def activate_not_selected(self):
+        self.show_ann_frame()
+        self.set_fe_arg_label()
+        
+    def activate_selected(self):
+        self.show_ann_frame()        
+        self.set_fe_arg_label()
+
+        
     def set_fe_arg_label(self):
         print('set_fe_arg_label')
         output = self.fe_selection.get_radio_fe_and_color()
@@ -946,9 +972,9 @@ class SentenceAnnotation(Frame):
 
     def show_list_args_mode_helper_dialog(self):
         help_msg = """
+        g : sair do modo de listagem de argumentos anotados
         n : seleciona próximo argumento anotado
         p : seleciona argumento anterior anotado
-        g : sair do modo de listagem de argumentos anotados
         i : visualizar definição do tipo de FE do argumento selecionado
         h : visualizar lista de teclas de atalho
         """
@@ -958,9 +984,12 @@ class SentenceAnnotation(Frame):
     def show_fes_selection_mode_helper_dialog(self):
         help_msg = """
         g : sair do modo de seleção do tipo/FE do argumento
+        a : anotar texto selecionado
         n : selecionar próximo FE da lista
         p : selecionar FE anterior da lista 
         i : visualizar definição do FE atual
+        Alt-e : Ir para lista de FEs não selecionados
+        Alt-a : Ir para lista de FEs selecionados
         h : visualizar lista de teclas de atalho
         """
         show_text_dialog(self, 'Ajuda - modo seleção de FEs', help_msg, font=('times', 14))

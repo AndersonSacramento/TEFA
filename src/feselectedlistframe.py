@@ -151,6 +151,7 @@ class FESelectedListFrame(Frame):
                 row_text = Frame(row)
 
                 txt_arg = Text(row_text, font=('times', 12), height=2, width=30)
+                txt_arg.bind('<KeyPress>', lambda e: 'break')
                 
                 txt_arg.delete('1.0', END)
                 txt_arg.insert('1.0', arg_text)

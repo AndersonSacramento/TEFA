@@ -85,14 +85,22 @@ class FESelection(Frame):
     def cycle_selection_ann_fe(self):
         self.fes_selection_list.cycle_selection_fe()
 
-    def set_on_fe_selection_handler(self, fn):
-        self.on_fe_selection_handler = fn
+    def set_on_fe_selected_handler(self, fn):
+        self.on_fe_selected_handler = fn
         
-    def on_fe_selection(self, selection_frame):
+    def on_fe_selected(self, selection_frame):
         self.selection_frame = selection_frame
-        if self.on_fe_selection_handler:
-            self.on_fe_selection_handler()
+        if self.on_fe_selected_handler:
+            self.on_fe_selected_handler()
 
+    def set_on_fe_not_selected_handler(self, fn):
+        self.on_fe_not_selected_handler = fn
+
+    def on_fe_not_selected(self, selection_frame):
+        self.selection_frame = selection_frame
+        if self.on_fe_not_selected_handler:
+            self.on_fe_not_selected_handler()
+        
     def is_selected(self):
         return self.selection_frame is not None
     
@@ -153,10 +161,10 @@ class FESelection(Frame):
         self.fes_selection_list.pack(side=LEFT, expand=YES, fill=BOTH)
         not_selected_row.pack(side=RIGHT, expand=YES, fill=BOTH)
 
-        self.all_selection_list.set_on_press_radio_handler(self.on_fe_selection)
+        self.all_selection_list.set_on_press_radio_handler(self.on_fe_not_selected)
         #self.core_selection_list.set_on_press_radio_handler(self.on_fe_selection)
         #self.peripheral_selection_list.set_on_press_radio_handler(self.on_fe_selection)
-        self.fes_selection_list.set_on_press_radio_handler(self.on_fe_selection)
+        self.fes_selection_list.set_on_press_radio_handler(self.on_fe_selected)
 
         
     def on_press_radio_arg(self):

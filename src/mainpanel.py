@@ -36,7 +36,6 @@ class MainPanel(Frame):
         self.sentences_frame.pack_forget()
         self.login_frame.pack(side=TOP, expand=YES, fill=BOTH)
 
-        
 if __name__ == '__main__':
     options = {'todo':{'title': 'Anotar'}, # 'data':['sent1', 'sent2']},
                'doing':{'title': 'Anotando'},# 'data':[]},
