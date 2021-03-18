@@ -97,7 +97,7 @@ class ScrolledList(Frame):
         sbar = Scrollbar(self, takefocus=0)
         list = Listbox(self, relief=SUNKEN,takefocus=1)
         sbar.config(command=list.yview)
-        list.config(yscrollcommand=sbar.set)
+        list.config(fg='black', yscrollcommand=sbar.set)
         sbar.pack(side=RIGHT, fill=Y)
         list.pack(side=LEFT, expand=YES, fill=BOTH)
 

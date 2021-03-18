@@ -51,7 +51,7 @@ class SentenceAnnotation(Frame):
     def make_widgets(self, options):
         left_frame = Frame(self)
         text = Text(left_frame)
-        text.config(font=('courier', 15, 'normal'))
+        text.config(fg='black', bg='white', font=('courier', 15, 'normal'))
         text.config(width=20, height=12)
         text.pack(side=TOP, expand=YES, fill=BOTH)
         text.bind('<KeyPress>', lambda e: self.on_keyboard(e))
@@ -67,11 +67,11 @@ class SentenceAnnotation(Frame):
 
         arg_frame = Frame(mode_frame)
         self.fe_arg_list_var = StringVar()
-        label_arg_fe = Label(arg_frame, text='', textvariable=self.fe_arg_list_var)
+        label_arg_fe = Label(arg_frame, text='', fg='black', bg='white', textvariable=self.fe_arg_list_var)
         label_arg_fe.pack(side=LEFT, expand=YES)
         self.label_arg_fe = label_arg_fe
 
-        txt_arg_fe_def = Text(arg_frame, font=('times', 12), height=2)
+        txt_arg_fe_def = Text(arg_frame, fg='black', bg='white', font=('times', 12), height=2)
         txt_arg_fe_def.pack(side=LEFT, expand=YES, fill=X)
         txt_arg_fe_def.bind('<KeyPress>', lambda e: self.on_keyboard(e))
         self.txt_arg_fe_def = txt_arg_fe_def
@@ -82,19 +82,19 @@ class SentenceAnnotation(Frame):
         
         ann_frame = Frame(mode_frame)
         self.fe_arg_var = StringVar()
-        label_fe =  Label(ann_frame, text='', textvariable=self.fe_arg_var)
+        label_fe =  Label(ann_frame, fg='black', bg='white', text='', textvariable=self.fe_arg_var)
         label_fe.pack(side=LEFT, expand=YES)
         self.label_fe = label_fe
 
 
-        txt_fe_def = Text(ann_frame, font=('times', 12), height=2, width=50)
+        txt_fe_def = Text(ann_frame, fg='black', bg='white', font=('times', 12), height=2, width=50)
         txt_fe_def.pack(side=LEFT, expand=YES)
         txt_fe_def.bind('<KeyPress>', lambda e: self.on_keyboard(e))
         #txt_fe_def.bind('<Key>', lambda e: 'break')
         self.txt_fe_def = txt_fe_def
 
 
-        btn_tag = Button(ann_frame, text='Anotar', command=self.annotate_arg)
+        btn_tag = Button(ann_frame, fg='black', bg='white', text='Anotar', command=self.annotate_arg)
         btn_tag.pack(side=RIGHT, expand=YES)
         ann_frame.pack_forget()
         self.ann_frame = ann_frame
@@ -592,11 +592,13 @@ class SentenceAnnotation(Frame):
             elif pressed == 'h':
                 self.show_fes_selection_mode_helper_dialog()
             elif pressed == 'a':
-                self.annotate_arg()
+                if self.annotate_arg():
+                    self.stop_arg_fe_selection_mode()
             elif self._is_alt_key(event) and pressed == 'e':
                 self.stop_arg_fe_selection_mode()
                 self.start_not_selected_fe_selection_mode()
             elif self.is_cancel_cmd(event):
+                self.stop_is_not_selected_fe_selection_mode()
                 self.stop_arg_fe_selection_mode()
         elif self.is_not_selected_fe_selection_mode():
             if pressed == 'n':
@@ -611,7 +613,8 @@ class SentenceAnnotation(Frame):
                 self.stop_is_not_selected_fe_selection_mode()
                 self.start_arg_fe_selection_mode()
             elif pressed == 'a':
-                self.annotate_arg()
+                if self.annotate_arg():
+                    self.stop_is_not_selected_fe_selection_mode()
             elif self.is_cancel_cmd(event):
                 self.stop_is_not_selected_fe_selection_mode()
         elif self._is_alt_key(event):
@@ -659,7 +662,9 @@ class SentenceAnnotation(Frame):
                 self.start_select_text_mode()
         else:
             if pressed == 'a':
-                self.annotate_arg()
+                if self.annotate_arg():
+                    self.stop_is_not_selected_fe_selection_mode()
+                    self.stop_arg_fe_selection_mode()
             elif pressed == 'i':
                 self.load_view_frame_info()
             elif pressed == 'q':
@@ -727,7 +732,7 @@ class SentenceAnnotation(Frame):
             if output:
                 fe, fe_color = output
             else:
-                return
+                return False
                 # fe can be None ?
             if self.cur_event_ann:
 
@@ -759,7 +764,7 @@ class SentenceAnnotation(Frame):
                 self.sentence_text_view.tag_config(tag_name, background=fe_color)
                     
                 self._update_fes_selections(self.cur_event_ann)
-                                                     
+            return True
             
         #sel_first_pos = SEL + '.first'
         #sel_last_pos = SEL + '.last'
@@ -905,7 +910,7 @@ class SentenceAnnotation(Frame):
         win = Toplevel()
         win.title(fnutils.fe_name_type(fe))
         msg = Message(win, text=fe.definition)
-        msg.config(bg=fe_color, font=('times', 16, 'italic'))
+        msg.config(bg=fe_color, fg='black', font=('times', 16, 'italic'))
         msg.pack(fill=X, expand=YES)
 
         win.update()

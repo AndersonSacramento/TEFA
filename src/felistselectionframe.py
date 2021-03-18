@@ -117,7 +117,7 @@ class FEListSelectionFrame(Frame):
         for i, fe_color in enumerate(self.fes_colors):
             row = Frame(self)
             row_type = Frame(row)
-            rad_type = Radiobutton(row_type, text=fnutils.fe_name_type(fe_color.fe), value=fnutils.fe_name_type(fe_color.fe), variable=self.var_fes, command=self.on_press_radio_arg, bg=fe_color.color)
+            rad_type = Radiobutton(row_type, fg='black', text=fnutils.fe_name_type(fe_color.fe), value=fnutils.fe_name_type(fe_color.fe), variable=self.var_fes, command=self.on_press_radio_arg, bg=fe_color.color)
             rad_type.pack(side=TOP)
             row_type.pack(side=TOP, expand=YES, fill=X)
             

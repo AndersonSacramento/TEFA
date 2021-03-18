@@ -150,7 +150,7 @@ class FESelectedListFrame(Frame):
                 arg_text = self.sentence_text[arg_ann.start_at:arg_ann.end_at]
                 row_text = Frame(row)
 
-                txt_arg = Text(row_text, font=('times', 12), height=2, width=30)
+                txt_arg = Text(row_text, fg='black', font=('times', 12), height=2, width=30)
                 txt_arg.bind('<KeyPress>', lambda e: 'break')
                 
                 txt_arg.delete('1.0', END)
