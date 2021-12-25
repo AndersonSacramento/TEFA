@@ -10,6 +10,7 @@ import fnutils
 from frameview import FrameView
 from guiutils import show_text_dialog
 from db import ArgANN
+from db import EventTBPT
 from copy import copy
 
 class SentenceAnnotation(Frame):
@@ -663,8 +664,13 @@ class SentenceAnnotation(Frame):
         else:
             if pressed == 'a':
                 if self.annotate_arg():
+                    print('annotate the selection as argument')
                     self.stop_is_not_selected_fe_selection_mode()
                     self.stop_arg_fe_selection_mode()
+            elif pressed == 's':
+                print('annotate the selection as a trigger')
+                self.annotate_trigger()
+                print('annotated event trigger')
             elif pressed == 'i':
                 self.load_view_frame_info()
             elif pressed == 'q':
@@ -771,6 +777,28 @@ class SentenceAnnotation(Frame):
         #print('annotate arg %s \n %s %s %s' % (text, str(self.sentence_text_view.index(sel_first_pos)), str(self.sentence_text_view.index(sel_last_pos)), str(len(self.sentence_text_view.get('0.0', END)))))
 
 
+    def annotate_trigger(self):
+        try:
+            sel_first = self.sentence_text_view.index(SEL_FIRST)
+            sel_last = self.sentence_text_view.index(SEL_LAST)
+            print(f" first {sel_first} last {sel_last}")
+            text = self.sentence_text_view.get(SEL_FIRST, SEL_LAST)
+            print(f"trigger span: {text}")
+        except Exception:
+            text = ''
+        if text:
+            start_at = self.sentence_text_view.index(SEL_FIRST).split('.')[1]
+            end_at = self.sentence_text_view.index(SEL_LAST).split('.')[1]
+            event_trigger = EventTBPT(id=fnutils.str_uuid(),
+                                      sentence_id=self.options['sentence_id'],
+                                      start_at=start_at,
+                                      end_at=end_at,
+                                      trigger=text)
+            print(f"new event trigger{event_trigger}")
+            fnutils.save_trigger_ann(event_trigger)
+                                      
+
+        
     def load_event_args_ann_tags(self):
         if self.cur_event_ann:
             for arg_ann in self.cur_event_ann.args_ann:

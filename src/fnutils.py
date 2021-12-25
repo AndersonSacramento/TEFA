@@ -125,6 +125,10 @@ def save_event_ann(event_ann):
     with session_scope() as session:
         session.add(event_ann)
 
+def save_trigger_ann(trigger_ann):
+    with session_scope() as session:
+        session.add(trigger_ann)
+        
 def save_arg_ann(arg_ann):
     with session_scope() as session:
         session.add(arg_ann)

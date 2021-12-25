@@ -82,6 +82,10 @@ class EventTBPT(Base):
     sentence_id = Column(String, ForeignKey('sentence.id'))
     sentence = relationship('Sentence', back_populates='events')
 
+
+    def __repr__(self):
+        return '<EventTBPT (trigger=%s, start=%s, end=%s)>' % (self.trigger, self.start_at, self.end_at)
+    
     def copy(self):
         return EventTBPT(id=self.id,
                          eid=self.eid,
