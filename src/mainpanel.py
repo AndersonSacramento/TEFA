@@ -26,7 +26,10 @@ class MainPanel(Frame):
         #self.back_btn = Button(self, text='Retornar', command=self.handle_back_btn)
         #self.back_btn.pack(side=TOP, anchor=NW)
         annotator = fnutils.find_unique_annotator()
-        self.options['email'] = annotator.email
+        if annotator:
+            self.options['email'] = annotator.email
+        else:
+            self.options['email'] = 'anonymous'
         self.sentences_frame = SentencesPanel(self.options, parent=self)
         self.sentences_frame.pack(side=TOP, expand=YES, fill=BOTH)
         
