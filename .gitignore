@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+
+# models directory
+models/*
+
 # data files
 data/*
 data/output-aida/
@@ -112,6 +116,7 @@ celerybeat.pid
 .venv
 dev_env/
 venv/
+env/
 ENV/
 env.bak/
 venv.bak/
