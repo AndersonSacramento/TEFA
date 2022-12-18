@@ -18,3 +18,12 @@ class FrameNetLemma(Base):
 
     def __repr__(self):
         return '<FrameNetLemma (lexunitid=%s, lemma=%s, pos=%s)>' % (self.lexunitid, self.lemma, self.pos)
+
+
+    def copy(self):
+        return FrameNetLemma(lexunitid=self.lexunitid,
+                       lemma=self.lemma,
+                       pos=self.pos,
+                       frameid=self.frameid,
+                       lang=self.lang)
+
