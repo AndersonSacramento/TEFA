@@ -9,8 +9,8 @@ import _thread, queue, time
 import fnutils
 from frameview import FrameView
 from guiutils import show_text_dialog
-from db import ArgANN
-from db import EventTBPT
+from entities.argument_annotation import ArgumentAnnotation
+from entities.timebank_event import TimebankEvent
 from copy import copy
 
 class SentenceAnnotation(Frame):
@@ -755,7 +755,7 @@ class SentenceAnnotation(Frame):
 
                     print('update arg_ann start_at %s end_at %s' % (arg_ann.start_at, arg_ann.end_at))
                 else:
-                    arg_ann = ArgANN(start_at=int(start_at),
+                    arg_ann = ArgumentAnnotaion(start_at=int(start_at),
                                      end_at=int(end_at),
                                      created_at=fnutils.now(),
                                      event_fe_id=fe.ID,
@@ -789,11 +789,11 @@ class SentenceAnnotation(Frame):
         if text:
             start_at = self.sentence_text_view.index(SEL_FIRST).split('.')[1]
             end_at = self.sentence_text_view.index(SEL_LAST).split('.')[1]
-            event_trigger = EventTBPT(id=fnutils.str_uuid(),
-                                      sentence_id=self.options['sentence_id'],
-                                      start_at=start_at,
-                                      end_at=end_at,
-                                      trigger=text)
+            event_trigger = TimebankEvent(id=fnutils.str_uuid(),
+                                          sentence_id=self.options['sentence_id'],
+                                          start_at=start_at,
+                                          end_at=end_at,
+                                          trigger=text)
             print(f"new event trigger{event_trigger}")
             fnutils.save_trigger_ann(event_trigger)
                                       

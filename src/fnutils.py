@@ -5,13 +5,21 @@ from sqlalchemy import create_engine
 import _thread
 
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
-#import timebankpttoolkit.timebankptcorpus as timebankpt
+
 from datetime import datetime, timezone
 import uuid
 import os.path
-from db import SentenceAnnotator, Annotator, LemmaFN, EventTBPT, TimeExpTBPT, Sentence, EventANN, ArgANN
-import db
+
+from entities.sentence_annotator import SentenceAnnotator
+from entities.annotator import Annotator
+from entities.frame_net_lemma import FrameNetLemma
+from entities.timebank_event import TimeBankEvent
+from entities.timebank_timexp import TimebankTimexp
+from entities.sentence import Sentence
+from entities.event_annotation import EventAnnotation
+from entities.argument_annotation import ArgumentAnnotation
 
 from contextlib import contextmanager
 
@@ -35,7 +43,8 @@ def create_session(dbpath='lome_tbpt.db'):
     
     engine = create_engine('sqlite:///%s' % (dbpath),  connect_args={'check_same_thread': False}, echo=False)
 
-    db.Base.metadata.create_all(engine)
+    base = declarative_base()
+    base.metadata.create_all(engine)
     
     Session = sessionmaker(bind=engine, expire_on_commit=False)
     get_all_event_or_state_frames()

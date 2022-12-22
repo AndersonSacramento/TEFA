@@ -4,7 +4,7 @@ from tkinter import *
 from tkinter import ttk
 from tkinter.messagebox import askquestion
 import _thread, queue, time
-from db import EventANN
+from entities.event_annotation import EventAnnotation
 import fnutils
 from frameview import FrameView
 
@@ -134,14 +134,14 @@ class FrameSelection(Frame):
                     fnutils.delete_previous(event_ann, event_ann.args_ann)
                 else:
                     return None
-            event_ann = EventANN(id=fnutils.str_uuid(),
+            event_ann = EventAnnotation(id=fnutils.str_uuid(),
                                      event_id=event_id,
                                      event_fn_id=frame_id,
                                      created_at=fnutils.now(),
                                      updated_at=fnutils.now())
             self.events_ann.append(event_ann)    
         else:
-            event_ann = EventANN(id=fnutils.str_uuid(),
+            event_ann = EventAnnotation(id=fnutils.str_uuid(),
                                  event_id=event_id,
                                  event_fn_id=frame_id,
                                  created_at=fnutils.now(),
@@ -163,11 +163,6 @@ class FrameSelection(Frame):
                 self.btn_remove_type.pack_forget()
             if self.event_ann_type_remove_handler:
                 self.event_ann_type_remove_handler(event_ann)
-    # def on_press_type_radio_event(self, ans):
-    #     print('type ans %s' % ans)
-    #     if self.event_val_handler:
-    #         self.event_val_handler(ValEventANN(status_type=ans))
-
 
     def view_frame_info_handler(self):
         if self.handler_view_frame_info:

@@ -5,7 +5,6 @@ import fnutils
 
 from felistselectionframe import FEListSelectionFrame
 from feselectedlistframe import FESelectedListFrame
-#from db import ValArgANN
 
 
 class FEColor():
