@@ -15,11 +15,14 @@ import os.path
 from entities.sentence_annotator import SentenceAnnotator
 from entities.annotator import Annotator
 from entities.frame_net_lemma import FrameNetLemma
-from entities.timebank_event import TimeBankEvent
+from entities.timebank_event import TimebankEvent
 from entities.timebank_timexp import TimebankTimexp
 from entities.sentence import Sentence
 from entities.event_annotation import EventAnnotation
 from entities.argument_annotation import ArgumentAnnotation
+from entities.frame_net_event import FrameNetEvent
+from entities.event_frame_element import EventFrameElement
+from entities import initialize_sql
 
 from contextlib import contextmanager
 
@@ -43,8 +46,7 @@ def create_session(dbpath='lome_tbpt.db'):
     
     engine = create_engine('sqlite:///%s' % (dbpath),  connect_args={'check_same_thread': False}, echo=False)
 
-    base = declarative_base()
-    base.metadata.create_all(engine)
+    initialize_sql(engine)
     
     Session = sessionmaker(bind=engine, expire_on_commit=False)
     get_all_event_or_state_frames()

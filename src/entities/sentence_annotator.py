@@ -2,9 +2,10 @@ import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import ForeignKey
 
+from entities import Base
 
-Base = declarative_base()
 
 class SentenceAnnotator(Base):
     __tablename__ = 'sentence_annotator'

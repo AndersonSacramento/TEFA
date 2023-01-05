@@ -2,9 +2,9 @@ import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import ForeignKey
 
-
-Base = declarative_base()
+from entities import Base
 
 
 class TimebankEvent(Base):
@@ -26,7 +26,7 @@ class TimebankEvent(Base):
         return '<TimebankEvent (trigger=%s, start=%s, end=%s)>' % (self.trigger, self.start_at, self.end_at)
     
     def copy(self):
-        return EventTBPT(id=self.id,
+        return TimebankEvent(id=self.id,
                          eid=self.eid,
                          trigger=self.trigger,
                          lemma=self.lemma,

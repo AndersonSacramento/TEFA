@@ -2,9 +2,9 @@ import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import ForeignKey
 
-
-Base = declarative_base()
+from entities import Base
 
 
 class TimebankTimexp(Base):

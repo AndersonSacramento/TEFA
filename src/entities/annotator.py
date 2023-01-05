@@ -3,8 +3,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, DateTime
 
+from entities.event_annotation import EventAnnotation
+from entities.argument_annotation import ArgumentAnnotation
+from entities import Base
 
-Base = declarative_base()
 
 
 class Annotator(Base):
@@ -14,8 +16,8 @@ class Annotator(Base):
     created_at = Column(DateTime)
     posted_at = Column(DateTime)
     
-    events_ann = relationship('EventANN', back_populates='annotator')
-    args_ann = relationship('ArgANN', back_populates='annotator')
+    events_ann = relationship('EventAnnotation', back_populates='annotator')
+    args_ann = relationship('ArgumentAnnotation', back_populates='annotator')
 
     def copy(self):
         return Annotator(email=self.email,

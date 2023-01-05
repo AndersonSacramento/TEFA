@@ -3,8 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, DateTime
 
-
-Base = declarative_base()
+from entities import Base
 
 
 class Sentence(Base):
@@ -14,8 +13,8 @@ class Sentence(Base):
     text = Column(String)
     document_name = Column(String)
     position = Column(Integer)
-    events = relationship('EventTBPT', back_populates='sentence')
-    timexps = relationship('TimeExpTBPT', back_populates='sentence')
+    events = relationship('TimebankEvent', back_populates='sentence')
+    timexps = relationship('TimebankTimexp', back_populates='sentence')
 
     def copy(self):
         return Sentence(id=self.id,
