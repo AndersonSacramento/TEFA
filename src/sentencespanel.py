@@ -2,6 +2,7 @@ from scrolledlist import ScrolledList
 from sentenceannotation import SentenceAnnotation
 from guiutils import show_text_dialog
 from tkinter import *
+from tkinter import filedialog as fd
 import _thread, queue, time
 import fnutils
 from copy import copy
@@ -34,6 +35,7 @@ class SentencesPanel(Frame):
         #self.config(takefocus=0)
         self.todo_scroll = ScrolledList(options['todo'], parent=self)
         self.todo_scroll.config_listbox(bg='tomato')
+        Button(self.todo_scroll, text='Adicionar', command=self.handler_file_dialog).pack(side=TOP)
         self.doing_scroll = ScrolledList(options['doing'], parent=self)
         self.doing_scroll.config_listbox(bg='aquamarine')
         self.done_scroll = ScrolledList(options['done'], parent=self)
@@ -89,7 +91,14 @@ class SentencesPanel(Frame):
         #
         self.parent.bind_all('<KeyPress>', self.on_keyboard)
 
-
+    def handler_file_dialog(self):
+        filename = fd.askopenfilename()
+        print(f'File name: {filename}')
+        fnutils.load_sentences_from(filename)
+        fnutils.update_sentences_annotator(self.options['email'])
+        _thread.start_new_thread(self.load_sentences, ('todo',))
+        self.update_todo_sentence_list()
+        
     def set_current_focus_list(self, scroll_list):
         self.focus_list = scroll_list
         scroll_list.get_list_focus()

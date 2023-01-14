@@ -15,8 +15,8 @@ class ArgumentAnnotation(Base):
     created_at = Column(DateTime)
     posted_at = Column(DateTime)
     updated_at = Column(DateTime)
-    #event_fe_id = Column(Integer, ForeignKey('event_frame_element.id'),
-    #                     primary_key=True)
+    event_fe_id = Column(Integer, ForeignKey('event_frame_element.id'),
+                         primary_key=True)
     event_ann_id = Column(String, ForeignKey('event_annotation.id'), primary_key=True)
     annotator_id = Column(String, ForeignKey('annotator.email'), primary_key=True)
     annotator = relationship('Annotator', back_populates='args_ann')

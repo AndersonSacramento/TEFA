@@ -61,19 +61,29 @@ def create_annotator(email):
     create_all_sentence_annotator(annotator)
     return annotator
 
+def delete_event(event_ann):
+    with session_scope() as session:
+        session.query(EventAnnotation).filter(EventAnnotation.id==event_ann.id).\
+            delete(synchronize_session='fetch')
+
+        session.query(ArgumentAnnotation).filter(ArgumentAnnotation.event_ann_id==event_ann.id, ArgumentAnnotation.annotator_id==event_ann.annotator_id).\
+                delete(synchronize_session='fetch')
+        
+        session.query(TimebankEvent).filter(TimebankEvent.id==event_ann.event_id).\
+            delete(synchronize_session='fetch')
 
 def delete_arg_ann(arg_ann):
     with session_scope() as session:
-        session.query(ArgANN).filter(ArgANN.event_fe_id==arg_ann.event_fe_id, ArgANN.event_ann_id==arg_ann.event_ann_id, ArgANN.annotator_id==arg_ann.annotator_id, ArgANN.start_at==arg_ann.start_at, ArgANN.end_at==arg_ann.end_at).\
+        session.query(ArgumentAnnotation).filter(ArgumentAnnotation.event_fe_id==arg_ann.event_fe_id, ArgumentAnnotation.event_ann_id==arg_ann.event_ann_id, ArgumentAnnotation.annotator_id==arg_ann.annotator_id, ArgumentAnnotation.start_at==arg_ann.start_at, ArgumentAnnotation.end_at==arg_ann.end_at).\
             delete(synchronize_session='fetch')
 
         
 def delete_previous(event_ann, args_ann):
     with session_scope() as session:
-        session.query(EventANN).filter(EventANN.event_id==event_ann.event_id, EventANN.annotator_id==event_ann.annotator_id).\
+        session.query(EventAnnotation).filter(EventAnnotation.event_id==event_ann.event_id, EventAnnotation.annotator_id==event_ann.annotator_id).\
             delete(synchronize_session='fetch')
         for arg_ann in args_ann:
-            session.query(ArgANN).filter(ArgANN.event_fe_id==arg_ann.event_fe_id, ArgANN.event_ann_id==arg_ann.event_ann_id, ArgANN.annotator_id==arg_ann.annotator_id).\
+            session.query(ArgumentAnnotation).filter(ArgumentAnnotation.event_fe_id==arg_ann.event_fe_id, ArgumentAnnotation.event_ann_id==arg_ann.event_ann_id, ArgumentAnnotation.annotator_id==arg_ann.annotator_id).\
                 delete(synchronize_session='fetch')
 
 
@@ -81,33 +91,33 @@ def save_val_event(val_event_ann):
     with session_scope() as session:
         if val_event_ann.is_wrong():
             # delete all the args
-            session.query(ValArgANN).filter(ValArgANN.event_ann_id==val_event_ann.event_ann_id, ValArgANN.annotator_id==val_event_ann.annotator_id).delete(synchronize_session='fetch')
-        session.query(ValEventANN).filter(ValEventANN.event_ann_id==val_event_ann.event_ann_id, ValEventANN.annotator_id==val_event_ann.annotator_id).delete(synchronize_session='fetch')
+            session.query(ValArgumentAnnotation).filter(ValArgumentAnnotation.event_ann_id==val_event_ann.event_ann_id, ValArgumentAnnotation.annotator_id==val_event_ann.annotator_id).delete(synchronize_session='fetch')
+        session.query(ValEventAnnotation).filter(ValEventAnnotation.event_ann_id==val_event_ann.event_ann_id, ValEventAnnotation.annotator_id==val_event_ann.annotator_id).delete(synchronize_session='fetch')
         session.add(val_event_ann)
 
 def query_val_event(event_ann_id, annotator_id):
     val_event = None
     with session_scope() as session:
-        val_event = session.query(ValEventANN).filter_by(event_ann_id=event_ann_id, annotator_id=annotator_id).first()
+        val_event = session.query(ValEventAnnotation).filter_by(event_ann_id=event_ann_id, annotator_id=annotator_id).first()
     return val_event
 
 def query_val_args(event_ann_id, annotator_id):
     vals_args = []
     with session_scope() as session:
-        vals_args = session.query(ValArgANN).filter_by(event_ann_id=event_ann_id, annotator_id=annotator_id).all()
+        vals_args = session.query(ValArgumentAnnotation).filter_by(event_ann_id=event_ann_id, annotator_id=annotator_id).all()
     return vals_args
 
 def delete_val_arg(event_ann_id, annotator_id, event_fe_id):
     with session_scope() as session:
-        session.query(ValArgANN).filter_by(event_ann_id=event_ann_id, annotator_id=annotator_id, event_fe_id=event_fe_id).delete(synchronize_session='fetch')
+        session.query(ValArgumentAnnotation).filter_by(event_ann_id=event_ann_id, annotator_id=annotator_id, event_fe_id=event_fe_id).delete(synchronize_session='fetch')
 
 def query_val_arg(event_ann_id, annotator_id, event_fe_id, session=None):
     if session:
-        return session.query(ValArgANN).filter_by(event_ann_id=event_ann_id, annotator_id=annotator_id, event_fe_id=event_fe_id).first()
+        return session.query(ValArgumentAnnotation).filter_by(event_ann_id=event_ann_id, annotator_id=annotator_id, event_fe_id=event_fe_id).first()
     else:
         val_arg = None
         with session_scope() as session:
-            val_arg = session.query(ValArgANN).filter_by(event_ann_id=event_ann_id, annotator_id=annotator_id, event_fe_id=event_fe_id).first()
+            val_arg = session.query(ValArgumentAnnotation).filter_by(event_ann_id=event_ann_id, annotator_id=annotator_id, event_fe_id=event_fe_id).first()
         return val_arg
 
 def save_val_arg(val_arg_ann):
@@ -157,7 +167,12 @@ def create_all_sentence_annotator(annotator):
                                       sentence_id=sentence.id,
                                       status='todo'))
 
-
+def update_sentences_annotator(annotator_email):
+    with session_scope() as session:
+        for sentence in session.query(Sentence).all():
+            session.add(SentenceAnnotator(annotator_id=annotator_email,
+                                          sentence_id=sentence.id,
+                                          status='todo'))
     
 def get_all_annotators(notin_emails=[]):
     annotators = []
@@ -170,13 +185,13 @@ def get_all_annotators(notin_emails=[]):
 def query_lemma(lemma_name):
     lemmas_fn = []
     with session_scope() as session:
-        lemmas_fn = session.query(LemmaFN).filter_by(lemma=lemma_name).all()
+        lemmas_fn = session.query(FrameNetLemma).filter_by(lemma=lemma_name).all()
     return lemmas_fn
 
 def query_frameid(lemma_name):
     frames_id = []
     with session_scope() as session:
-        frames_id = {out[0] for out in session.query(LemmaFN.frameid).filter_by(lemma=lemma_name).all()}
+        frames_id = {out[0] for out in session.query(FrameNetLemma.frameid).filter_by(lemma=lemma_name).all()}
     return frames_id
 
 
@@ -201,7 +216,7 @@ def query_sentence_by_event_id(id):
     with session_scope() as session:
         sentence = session.query(Sentence).\
             join(EventTBPT, Sentence.id==EventTBPT.sentence_id).\
-            join(EventANN, EventANN.event_id==EventTBPT.id).\
+            join(EventAnnotation, EventAnnotation.event_id==EventTBPT.id).\
             filter(EventANN.id==id).\
             first()
     return sentence
@@ -219,21 +234,21 @@ def find_fe(fes, fe_name):
 def query_events_sentence(sentence):
     events = []
     with session_scope() as session:
-        events = session.query(EventTBPT).filter_by(sentence_id=sentence.id).all()
+        events = session.query(TimebankEvent).filter_by(sentence_id=sentence.id).all()
     return events
 
 def query_event_tbpt(event_id):
     event = None
     with session_scope() as session:
-        event = session.query(EventTBPT).filter_by(id=event_id).first()
+        event = session.query(TimebankEvent).filter_by(id=event_id).first()
     return event
 
 def query_events_ann(annotator_id, events_tbpt_ids):
     events_ann = []
     with session_scope() as session:
-        events_ann = session.query(EventANN).filter(EventANN.event_id.in_(events_tbpt_ids)).filter_by(annotator_id=annotator_id).all()
+        events_ann = session.query(EventAnnotation).filter(EventAnnotation.event_id.in_(events_tbpt_ids)).filter_by(annotator_id=annotator_id).all()
         for event_ann in events_ann:
-            event_ann.args_ann = session.query(ArgANN).filter_by(event_ann_id=event_ann.id, annotator_id=annotator_id).all()
+            event_ann.args_ann = session.query(ArgumentAnnotation).filter_by(event_ann_id=event_ann.id, annotator_id=annotator_id).all()
     return events_ann
 
 
@@ -277,16 +292,42 @@ def load_timebankpt_data(corpus_dir):
         for (i, sent) in enumerate(doc.get_sentences()):
             if not sent.has_events(): continue
             sent_id = str_uuid()
-            sentence = Sentence(id=sent_id, text=sent.get_text(), document_name=doc_name, position=i)
+            sentence = Sentence(id=sent_id, text=sent.get_text(),
+                                document_name=doc_name, position=i)
             session.add(sentence)
             for ((start_at, end_at), event) in sent.get_events_locations():
-                event_tbpt = EventTBPT(id=str_uuid(), eid=event.get_id(), trigger=event.text, lemma=event.get_stem(), pos=event.get_pos(), start_at=start_at, end_at=end_at, sentence_id=sent_id)
+                event_tbpt = EventTBPT(id=str_uuid(),
+                                       eid=event.get_id(),
+                                       trigger=event.text,
+                                       lemma=event.get_stem(),
+                                       pos=event.get_pos(),
+                                       start_at=start_at,
+                                       end_at=end_at,
+                                       sentence_id=sent_id)
                 session.add(event_tbpt)
             for ((start_at, end_at), timexp) in sent.get_timexs_locations():
-                time_exp_tbpt = TimeExpTBPT(id=str_uuid(), tid=timexp.get_id(), text=timexp.get_text(), start_at=start_at, end_at=end_at, sentence_id=sent_id)
+                time_exp_tbpt = TimeExpTBPT(id=str_uuid(),
+                                            tid=timexp.get_id(),
+                                            text=timexp.get_text(),
+                                            start_at=start_at,
+                                            end_at=end_at,
+                                            sentence_id=sent_id)
                 session.add(time_exp_tbpt)
             session.commit()
             
+def load_sentences_from(file_path):
+    session = Session()
+    with open(file_path) as in_file:
+        for i,line_sentence in enumerate(in_file):
+            sent_id = str_uuid()
+            sentence = Sentence(id=sent_id,
+                                text=line_sentence,
+                                document_name=os.path.basename(file_path),
+                                position=i)
+            print(f'Sentence {i}: {sentence}')
+            session.add(sentence)
+        session.commit()
+                                
     
 def load_fn_events_lemmas():
     Session = sessionmaker(bind=engine)
@@ -374,11 +415,11 @@ def filter_fes(frame, filter_by = 'Core'):
 def get_args_ann_fes(event_ann_id, annotator_id):
     fes_ann = []
     with session_scope() as session:
-        args_ann = session.query(ArgANN).filter_by(event_ann_id=event_ann_id, annotator_id=annotator_id).all()
-        event_ann = session.query(EventANN).filter_by(id=event_ann_id).first()
+        args_ann = session.query(ArgumentAnnotation).filter_by(event_ann_id=event_ann_id, annotator_id=annotator_id).all()
+        event_ann = session.query(EventAnnotation).filter_by(id=event_ann_id).first()
         
     args_fe_ids = [arg_ann.event_fe_id for arg_ann in args_ann]
-    for fe in fn.frame(event_ann.event_fn_id).FE.values():
+    for fe in fn.frame(event_ann.frame_id).FE.values():
         if fe.ID in args_fe_ids:
             fes_ann.append(fe)
     return fes_ann
@@ -387,7 +428,7 @@ def get_args_ann_fes(event_ann_id, annotator_id):
 def get_fes_from_args(event_ann, args_ann):
     fes_ann = []
     args_fe_ids = [arg_ann.event_fe_id for arg_ann in args_ann]
-    for fe in fn.frame(event_ann.event_fn_id).FE.values():
+    for fe in fn.frame(event_ann.frame_id).FE.values():
         if fe.ID in args_fe_ids:
             fes_ann.append(fe)
     return fes_ann
@@ -461,7 +502,7 @@ def lemma_frames(lang='por'):
             _ , pos = lexunit.name.split('.')
             pos = fn_to_wn_pos(pos)
             for lemma_name in get_lemma_from_lexunit_name(lexunit.name, lang=lang):
-                yield LemmaFN(lexunitid=lexunit.ID,
+                yield FrameNetLemma(lexunitid=lexunit.ID,
                               lemma=lemma_name,
                               pos=pos,
                               frameid=frame.ID,

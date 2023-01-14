@@ -125,7 +125,7 @@ class FrameSelection(Frame):
         if self.events_ann:
             event_ann = fnutils.find_event_ann(self.events_ann, event_id)
             #if event_ann:
-            #    event_ann.event_fn_id = frame_id
+            #    event_ann.frame_id = frame_id
             #else:
             if event_ann:
                 ans = askquestion('Pergunta', 'Você confirma a mudança do tipo do evento?', parent=self)
@@ -136,14 +136,14 @@ class FrameSelection(Frame):
                     return None
             event_ann = EventAnnotation(id=fnutils.str_uuid(),
                                      event_id=event_id,
-                                     event_fn_id=frame_id,
+                                     frame_id=frame_id,
                                      created_at=fnutils.now(),
                                      updated_at=fnutils.now())
             self.events_ann.append(event_ann)    
         else:
             event_ann = EventAnnotation(id=fnutils.str_uuid(),
                                  event_id=event_id,
-                                 event_fn_id=frame_id,
+                                 frame_id=frame_id,
                                  created_at=fnutils.now(),
                                  updated_at=fnutils.now())
             self.events_ann.append(event_ann)
@@ -241,7 +241,7 @@ class FrameSelection(Frame):
             print('frame selection events_ann')
             event_ann = fnutils.find_event_ann(self.events_ann, event_tbpt.id)
             if event_ann:
-                frame = self.selected_frames.get(event_ann.event_fn_id) or fnutils.frame_by_id(event_ann.event_fn_id)
+                frame = self.selected_frames.get(event_ann.frame_id) or fnutils.frame_by_id(event_ann.frame_id)
                 if frame:
                     self.var_event_type.set('Tipo: %s' % frame.name)
                     self.btn_remove_type.pack(side=RIGHT)

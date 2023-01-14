@@ -23,7 +23,7 @@ class EventAnnotation(Base):
 
     def copy(self):
         return EventAnnotation(id=self.id,
-                        event_fn_id=self.event_fn_id,
+                        frame_id=self.frame_id,
                         event_id=self.event_id,
                         created_at=self.created_at,
                         posted_at=self.posted_at,

@@ -141,7 +141,7 @@ class SentenceAnnotation(Frame):
         
     def load_view_frame_info(self):
         if self.cur_event_ann:
-            frame = fnutils.frame_by_id(self.cur_event_ann.event_fn_id)
+            frame = fnutils.frame_by_id(self.cur_event_ann.frame_id)
             if frame:
                 win = Toplevel()
                 frame_view = FrameView({'frame':frame}, win)
@@ -667,6 +667,9 @@ class SentenceAnnotation(Frame):
                     print('annotate the selection as argument')
                     self.stop_is_not_selected_fe_selection_mode()
                     self.stop_arg_fe_selection_mode()
+
+            elif pressed == 'd':
+                   self.delete_trigger()
             elif pressed == 's':
                 print('annotate the selection as a trigger')
                 self.annotate_trigger()
@@ -755,7 +758,7 @@ class SentenceAnnotation(Frame):
 
                     print('update arg_ann start_at %s end_at %s' % (arg_ann.start_at, arg_ann.end_at))
                 else:
-                    arg_ann = ArgumentAnnotaion(start_at=int(start_at),
+                    arg_ann = ArgumentAnnotation(start_at=int(start_at),
                                      end_at=int(end_at),
                                      created_at=fnutils.now(),
                                      event_fe_id=fe.ID,
@@ -796,8 +799,11 @@ class SentenceAnnotation(Frame):
                                           trigger=text)
             print(f"new event trigger{event_trigger}")
             fnutils.save_trigger_ann(event_trigger)
+            self.load_content(self.options)
                                       
-
+    def delete_trigger(self):
+        fnutils.delete_event(self.cur_event_ann)
+        self.load_content(self.options)
         
     def load_event_args_ann_tags(self):
         if self.cur_event_ann:
@@ -1113,7 +1119,7 @@ class SentenceAnnotation(Frame):
     
     def event_type_selection_handler(self, event, event_ann, frame):
         self.delete_all_args_ann_tags()
-            #if event_ann and self.cur_event_ann.event_fn_id != event_ann.event_fn_id:
+            #if event_ann and self.cur_event_ann.frame_id != event_ann.frame_id:
             #    event_ann.args_ann = []
             #    print('set empty list')
 
@@ -1160,7 +1166,7 @@ class SentenceAnnotation(Frame):
             self._update_fes_selections(self.cur_event_ann)
         
     def _update_fes_selections(self, event_ann):
-        frame = fnutils.frame_by_id(event_ann.event_fn_id)
+        frame = fnutils.frame_by_id(event_ann.frame_id)
         if event_ann and frame:
             print('update_fes_selection frame id: %s' % frame.ID)
             self.fe_selection.update_selections()

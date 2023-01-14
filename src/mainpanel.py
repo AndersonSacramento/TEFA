@@ -30,6 +30,7 @@ class MainPanel(Frame):
             self.options['email'] = annotator.email
         else:
             self.options['email'] = 'anonymous'
+            fnutils.create_annotator(self.options['email'])
         self.sentences_frame = SentencesPanel(self.options, parent=self)
         self.sentences_frame.pack(side=TOP, expand=YES, fill=BOTH)
         
