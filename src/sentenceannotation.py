@@ -802,8 +802,11 @@ class SentenceAnnotation(Frame):
             self.load_content(self.options)
                                       
     def delete_trigger(self):
-        fnutils.delete_event(self.cur_event_ann)
-        self.load_content(self.options)
+        ans = askquestion('Pergunta',
+                          'Você confirma a remoção do evento?', parent=self)
+        if ans == 'yes':
+            fnutils.delete_event(self.cur_event_ann)
+            self.load_content(self.options)
         
     def load_event_args_ann_tags(self):
         if self.cur_event_ann:
