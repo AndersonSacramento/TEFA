@@ -16,15 +16,10 @@ class MainPanel(Frame):
 
 
     def makeWidgets(self, options):
-        #self.login_frame = LoginPanel(options, parent=self)
-        #self.login_frame.set_on_load_annotator(self.load_sentences_frame)
         self.load_sentences_frame(None)
         
 
     def load_sentences_frame(self, email):
-        #self.login_frame.pack_forget()
-        #self.back_btn = Button(self, text='Retornar', command=self.handle_back_btn)
-        #self.back_btn.pack(side=TOP, anchor=NW)
         annotator = fnutils.find_unique_annotator()
         if annotator:
             self.options['email'] = annotator.email
@@ -41,10 +36,10 @@ class MainPanel(Frame):
         self.login_frame.pack(side=TOP, expand=YES, fill=BOTH)
 
 if __name__ == '__main__':
-    options = {'todo':{'title': 'Anotar'}, # 'data':['sent1', 'sent2']},
-               'doing':{'title': 'Anotando'},# 'data':[]},
-               'done': {'title': 'Anotada'},#, 'data':['sent0'] },
-               'annotators':{'title': 'Anotadores'}}#'data':['ander@mail.com', 'silva@gmail.com']}}
+    options = {'todo':{'title': 'Anotar'},
+               'doing':{'title': 'Anotando'},
+               'done': {'title': 'Anotada'},
+               'annotators':{'title': 'Anotadores'}}
     if len(sys.argv) > 1:
         fnutils.create_session(dbpath=sys.argv[1])
     else:

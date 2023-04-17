@@ -23,19 +23,6 @@ class FEListSelectionFrame(Frame):
             cur_fe_name = self.var_fes.get()
             self.var_fes.set(self._get_next_fe_name(cur_fe_name))
             self.on_press_radio_arg()
-
-    # def _get_next_fe_name(self, fe_name):
-    #     i = 0
-    #     for fe_color in self.fes_colors:
-    #         if fnutils.fe_name_type(fe_color.fe) == fe_name:
-    #             break
-    #         i += 1
-    #     if i+1 < len(self.fes_colors):
-    #         return self.fes_colors[i+1].fe.name
-    #     else:
-    #         return self.fes_colors[0].fe.name
-
-
     
     def cycle_step_selection_fe(self, step_func):
         if self.fes_colors:
@@ -54,15 +41,6 @@ class FEListSelectionFrame(Frame):
     
     def _get_next_fe_name(self, fe_name):
         return self._get_step_fe_name(fe_name, lambda i : i+1)
-    # i = 0
-    # for fe_color in self.fes_colors:
-    #     if fnutils.fe_name_type(fe_color.fe) == fe_name:
-    #         break
-    #     i += 1
-    # if i+1 < len(self.fes_colors):
-    #     return self.fes_colors[i+1].fe.name
-    # else:
-    #     return self.fes_colors[0].fe.name
 
     def _get_step_fe_name(self, fe_name, step_func):
         i = 0
@@ -108,21 +86,24 @@ class FEListSelectionFrame(Frame):
         self.var_fes = StringVar()
 
         if self.fes:
-            #self.var_fes.set(self.fes_names[0])
-            self.canv.config(scrollregion=(0, 0, 150, 30+len(list(self.fes.values()))*30))
+            self.canv.config(scrollregion=(0, 0,
+                                           150, 30+len(list(self.fes.values()))*30))
 
         self.fes_selection_vars = []
 
-        #fes_colors = [fe_color.color for fe_color in self.fes.values()]
         for i, fe_color in enumerate(self.fes_colors):
             row = Frame(self)
             row_type = Frame(row)
-            rad_type = Radiobutton(row_type, fg='black', text=fnutils.fe_name_type(fe_color.fe), value=fnutils.fe_name_type(fe_color.fe), variable=self.var_fes, command=self.on_press_radio_arg, bg=fe_color.color)
+            rad_type = Radiobutton(row_type, fg='black',
+                                   text=fnutils.fe_name_type(fe_color.fe),
+                                   value=fnutils.fe_name_type(fe_color.fe),
+                                   variable=self.var_fes,
+                                   command=self.on_press_radio_arg,
+                                   bg=fe_color.color)
             rad_type.pack(side=TOP)
             row_type.pack(side=TOP, expand=YES, fill=X)
-            
-            self.rows_ids.append(self.canv.create_window(10,30+(i*30), anchor=W, window=row))
-
+            self.rows_ids.append(self.canv.create_window(10,30+(i*30),
+                                                         anchor=W, window=row))
 
 
     def clear_fes_rows(self):
@@ -136,8 +117,6 @@ class FEListSelectionFrame(Frame):
         canv = Canvas(self, bg='white', relief=SUNKEN)
         canv.config(highlightthickness=0)
         canv.config(width=150, height=100)
-        # canv.config(scrollregion=(0, 0, 300, 200))
-
 
         sbar = Scrollbar(self)
         sbar.config(command=canv.yview)
@@ -165,7 +144,9 @@ if __name__ == '__main__':
             self.name = name
             self.id = id
             
-    options = {'fes_colors': ['#85E314', '#33E4CF', '#F14EAA', '#F1D54A', '#E67D57', '#F3BCBC'],
+    options = {'fes_colors': ['#85E314', '#33E4CF',
+                              '#F14EAA', '#F1D54A',
+                              '#E67D57', '#F3BCBC'],
                'fes': [FN('Local', 1), FN('Tempo', 2), FN('Atacante', 3)],
                'title' : 'Elementos Core'   }
     fe_list = FEListSelectionFrame(options)

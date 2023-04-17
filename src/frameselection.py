@@ -32,17 +32,6 @@ class FrameSelection(Frame):
         self.triggers_combo.config(values=[e.trigger for e in events])
         self.cycle_combobox_trigger()
 
-
-    # def set_val_event(self, val_event):
-    #     print('set val event')
-    #     if val_event:
-    #         if val_event.is_wrong():
-    #             print('val wrong')
-    #             self.ans_type_event.set('Errado')
-    #         else:
-    #             print('val right')
-    #             self.ans_type_event.set('Certo')
-    
     def set_events_ann(self, events_ann):
         self.events_ann = events_ann
 
@@ -54,18 +43,15 @@ class FrameSelection(Frame):
 
     
     def make_widgets(self, options):
-        #vlist = options['triggers']
         self.trigger_var = StringVar()
         self.trigger_var.set("Selecione um gatilho")
         self.triggers_combo = ttk.Combobox(self)#
         self.triggers_combo.config(textvariable=self.trigger_var)
         self.triggers_combo.pack(side=TOP)
-        #self.triggers_combo.current(0)
         self.triggers_combo.bind("<<ComboboxSelected>>", self.trigger_change_handler)
 
         row_type = Frame(self)
 
-        
         self.var_event_type = StringVar()
         self.var_event_type.set('Tipo:')
         label = Label(row_type, font=('times', 18))
@@ -74,14 +60,13 @@ class FrameSelection(Frame):
 
 
         self.img_info = PhotoImage(file="imgs/info-18px.gif")
-        self.btn_info = Button(row_type, image=self.img_info, command=self.view_frame_info_handler)
-        #self.btn_info.config(height=18, width=18)
+        self.btn_info = Button(row_type, image=self.img_info,
+                               command=self.view_frame_info_handler)
         self.btn_info.place(bordermode=OUTSIDE, height=18, width=18)
         self.btn_info.pack(side=LEFT, expand=YES, anchor=W)
-        
-        
         self.img_del = PhotoImage(file="imgs/remove_icon.gif")
-        self.btn_remove_type = Button(row_type, image=self.img_del, command=self.remove_event_type_handler)
+        self.btn_remove_type = Button(row_type, image=self.img_del,
+                                      command=self.remove_event_type_handler)
         self.btn_remove_type.pack_forget()
 
         row_type.pack(side=TOP, expand=YES, fill=X)
@@ -100,11 +85,18 @@ class FrameSelection(Frame):
         self.all_scroll.pack(side=TOP, expand=YES, fill=BOTH)
 
     
-        self.suggestion_scroll.set_middle_mouse_handle(lambda i, s: self.event_type_selection_suggestion(i[0], s))
-        self.all_scroll.set_middle_mouse_handle(lambda i, s: self.event_type_selection_all(i[0], s))
+        self.suggestion_scroll\
+            .set_middle_mouse_handle(lambda i, s:
+                                     self.event_type_selection_suggestion(i[0], s))
+        self.all_scroll\
+            .set_middle_mouse_handle(lambda i, s:
+                                     self.event_type_selection_all(i[0], s))
 
-        self.suggestion_scroll.set_double_1_handler(lambda i, s: self.event_view_frame_suggestion(i[0], s))
-        self.all_scroll.set_double_1_handler(lambda i, s: self.event_view_frame_all(i[0], s))
+        self.suggestion_scroll\
+            .set_double_1_handler(lambda i, s:
+                                  self.event_view_frame_suggestion(i[0], s))
+        self.all_scroll\
+            .set_double_1_handler(lambda i, s: self.event_view_frame_all(i[0], s))
 
     def load_content(self):
         _thread.start_new_thread(self.load_all_frames_list, ())
@@ -124,11 +116,10 @@ class FrameSelection(Frame):
     def create_or_update_event_ann(self, event_id, frame_id):
         if self.events_ann:
             event_ann = fnutils.find_event_ann(self.events_ann, event_id)
-            #if event_ann:
-            #    event_ann.frame_id = frame_id
-            #else:
             if event_ann:
-                ans = askquestion('Pergunta', 'Você confirma a mudança do tipo do evento?', parent=self)
+                ans = askquestion('Pergunta',
+                                  'Você confirma a mudança do tipo do evento?',
+                                  parent=self)
                 if ans == 'yes':
                     self.events_ann.remove(event_ann)
                     fnutils.delete_previous(event_ann, event_ann.args_ann)
@@ -151,7 +142,9 @@ class FrameSelection(Frame):
 
 
     def remove_event_type_handler(self):
-        ans = askquestion('Pergunta', 'Você confirma a remoção do tipo do evento?', parent=self)
+        ans = askquestion('Pergunta',
+                          'Você confirma a remoção do tipo do evento?',
+                          parent=self)
         if ans == 'yes':
             event_pos = self.triggers_combo.current()
             event = self._event_by_position(event_pos)
@@ -219,16 +212,12 @@ class FrameSelection(Frame):
             
     def load_view_frame_info(self, frame):
         win = Toplevel()
-        #scroll_text = ScrolledText(win, text=str(frame))
-        #scroll_text.get_text_widget().bind("<Key>", lambda e: "break")
         frame_view = FrameView({'frame':frame}, win)
         win.update()
         x_left = int(self.winfo_screenwidth()/2 - win.winfo_width()/2)
         y_top = int(self.winfo_screenheight()/2 - win.winfo_height()/2)
                 
         win.geometry("+{}+{}".format(x_left, y_top))
-        
-        #win.focus_set()
         win.grab_set()
         win.wait_window()
         
@@ -241,12 +230,15 @@ class FrameSelection(Frame):
             print('frame selection events_ann')
             event_ann = fnutils.find_event_ann(self.events_ann, event_tbpt.id)
             if event_ann:
-                frame = self.selected_frames.get(event_ann.frame_id) or fnutils.frame_by_id(event_ann.frame_id)
+                frame = (self.selected_frames.get(event_ann.frame_id)
+                         or fnutils.frame_by_id(event_ann.frame_id))
                 if frame:
                     self.var_event_type.set('Tipo: %s' % frame.name)
                     self.btn_remove_type.pack(side=RIGHT)
                     if self.event_ann_type_selection_handler:
-                        self.event_ann_type_selection_handler(event_tbpt, event_ann, frame)
+                        self.event_ann_type_selection_handler(event_tbpt,
+                                                              event_ann,
+                                                              frame)
             else:
                 self.var_event_type.set('Tipo:')
                 self.btn_remove_type.pack_forget()
@@ -262,7 +254,8 @@ class FrameSelection(Frame):
         self.suggestion_scroll.clear_list()
         if self.events:
             trigger_lemma = self.events[i].lemma
-            _thread.start_new_thread(self.load_frames_suggestions, (trigger_lemma,))
+            _thread.start_new_thread(self.load_frames_suggestions,
+                                     (trigger_lemma,))
 
     def cycle_combobox_trigger(self):
         if self.events:

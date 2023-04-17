@@ -4,7 +4,8 @@ import sqlalchemy
 
 import math
 
-from db import SentenceAnnotator, Annotator, LemmaFN, EventTBPT, Sentence, EventANN, ArgANN, Base
+from db import SentenceAnnotator, Annotator, LemmaFN, EventTBPT,\
+    Sentence, EventANN, ArgANN, Base
 
 
 
@@ -43,7 +44,6 @@ def session_scope():
         
 
 def create_partition(dbpath, config, common_percent=10):
-    "config = [ (sd@mail, 34), (f@mail: 50)}"
     global Session
 
 
@@ -89,7 +89,8 @@ def create_partition(dbpath, config, common_percent=10):
             end_at = events_len
             
         femail = email.split('@')[0]
-        cur_engine = create_engine('sqlite:///%s_%s.db' % (db_name, femail), echo=True)
+        cur_engine = create_engine('sqlite:///%s_%s.db' % (db_name, femail),
+                                   echo=True)
         CurSession = sessionmaker(bind=cur_engine)
         cur_session =  CurSession()
         Base.metadata.create_all(cur_engine)

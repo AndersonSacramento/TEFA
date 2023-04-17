@@ -57,15 +57,6 @@ class FESelectedListFrame(Frame):
     
     def _get_next_fe_name(self, fe_name):
         return self._get_step_fe_name(fe_name, lambda i : i+1)
-        # i = 0
-        # for fe_color in self.fes_colors:
-        #     if fe_color.fe.name == fe_name:
-        #         break
-        #     i += 1
-        # if i+1 < len(self.fes_colors):
-        #     return self.fes_colors[i+1].fe.name
-        # else:
-        #     return self.fes_colors[0].fe.name
 
     def _get_step_fe_name(self, fe_name, step_func):
         i = 0
@@ -111,16 +102,12 @@ class FESelectedListFrame(Frame):
     
     def create_fes_radios_list(self):
         self.clear_fes_rows()
-        
         self.var_fes = StringVar()
-
-
-
         self.fes_selection_vars = []
 
-        #fes_colors = [fe_color.color for fe_color in self.fes.values()]
-
-        args_fe_count = {fe_id:len([arg_ann for arg_ann in self.args_ann if arg_ann.event_fe_id == fe_id]) for fe_id in self.fes }
+        args_fe_count = {fe_id: len([arg_ann for arg_ann in self.args_ann
+                                     if arg_ann.event_fe_id == fe_id])
+                         for fe_id in self.fes }
         print('args_fe_count: %s' % args_fe_count)
         self.imgs = []
         next_row_px_add = 0
@@ -141,24 +128,30 @@ class FESelectedListFrame(Frame):
         for i, fe_color in enumerate(self.fes_colors):
             row = Frame(scrollable_frame)
             row_type = Frame(row)
-            rad_type = Radiobutton(row_type, text=fnutils.fe_name_type(fe_color.fe), value=fnutils.fe_name_type(fe_color.fe), variable=self.var_fes, command=self.on_press_radio_arg, bg=fe_color.color)
+            rad_type = Radiobutton(row_type,
+                                   text=fnutils.fe_name_type(fe_color.fe),
+                                   value=fnutils.fe_name_type(fe_color.fe),
+                                   variable=self.var_fes,
+                                   command=self.on_press_radio_arg,
+                                   bg=fe_color.color)
             rad_type.pack(side=TOP, anchor=NW)
             row_type.pack(side=TOP, expand=YES, fill=X,  anchor=NW)
             j = 0
-            #row_arg = Frame(row)
-            for arg_ann in [arg_ann for arg_ann in self.args_ann if arg_ann.event_fe_id == fe_color.fe.ID]:
+            for arg_ann in [arg_ann for arg_ann in self.args_ann
+                            if arg_ann.event_fe_id == fe_color.fe.ID]:
                 arg_text = self.sentence_text[arg_ann.start_at:arg_ann.end_at]
                 row_text = Frame(row)
-
-                txt_arg = Text(row_text, fg='black', font=('times', 12), height=2, width=30)
+                txt_arg = Text(row_text, fg='black',
+                               font=('times', 12), height=2, width=30)
                 txt_arg.bind('<KeyPress>', lambda e: 'break')
-                
                 txt_arg.delete('1.0', END)
                 txt_arg.insert('1.0', arg_text)
                 
                 img = PhotoImage(file="imgs/remove_icon_18.gif")
                 self.imgs.append(img)
-                btn_remove_arg = Button(row_text, image=img, command=lambda arg_ann=arg_ann: self.remove_event_arg_handler(arg_ann))
+                btn_remove_arg = Button(row_text, image=img,
+                                        command=lambda arg_ann=arg_ann:
+                                        self.remove_event_arg_handler(arg_ann))
                 btn_remove_arg.pack(side=RIGHT, expand=YES)
                 txt_arg.pack(side=LEFT, expand=YES, fill=X, anchor=NW)
 
@@ -166,13 +159,16 @@ class FESelectedListFrame(Frame):
                 
                 print('make message: %s \n%d' % (arg_text, j))
                 j += 1
-            #row_arg.pack(side=TOP, expand=YES, fill=X,  anchor=NW)
+
             row.pack(expand=YES, fill=X)
         if self.fes:
-            #width = self.canvas.bbox()[2] - self.canvas.bbox()[0]
             self.canvas.update()
             print('canvas width %s' % self.canvas.winfo_width())
-            self.rows_ids.append(self.canvas.create_window((0,0),  width=self.canvas.winfo_width(), window=scrollable_frame, anchor='nw'))
+            self.rows_ids\
+                .append(self.canvas.create_window((0,0),
+                                                  width=self.canvas.winfo_width(),
+                                                  window=scrollable_frame,
+                                                  anchor='nw'))
         self.canvas.config(yscrollcommand=self.sbar.set)
 
         
@@ -182,52 +178,15 @@ class FESelectedListFrame(Frame):
     def _on_mousewheel(self, event):
         self.canvas.yview_scroll(-1*(event.delta/120), "units")
 
-            #(i+1) * 80)
-            #print('next pos (%d,%d)' % (10, ((i+1)*20) + next_row_px_add))
-            #self.rows_ids.append(self.canvas.create_window((10, ((i+1)*50) + next_row_px_add), anchor=W, window=row))#, width=300)) #(args_fe_count[fe_color.fe.ID]-1)*50
-            #bottom += ((i+1)*50) + next_row_px_add
-            #next_row_px_add = (args_fe_count[fe_color.fe.ID])*20
-
-        #if self.fes:
-        #    self.canvas.config(scrollregion=(0, 0, 150, bottom))
-
-    # def create_fes_radios_list(self):
-    #     self.clear_fes_rows()
-        
-    #     self.var_fes = StringVar()
-    #     self.fes_names = [fe.name for fe in self.fes]
-    #     if self.fes_names:
-    #         self.var_fes.set(self.fes_names[0])
-    #         self.canvas.config(scrollregion=(0, 0, 150, 30+len(self.fes)*30))
-
-    #     self.fes_selection_vars = []
-
-    #     for i in range(len(self.fes)):
-    #         row = Frame(self)
-    #         row_type = Frame(row)
-    #         rad_type = Radiobutton(row_type, text=self.fes_names[i], value=self.fes_names[i], variable=self.var_fes, command=self.on_press_radio_arg, bg=self.fes_colors[i])
-    #         rad_type.pack(side=TOP)
-    #         row_type.pack(side=TOP, expand=YES, fill=X)
-            
-    #         self.rows_ids.append(self.canvas.create_window(10,30+(i*30), anchor=W, window=row))
-
-
-
     def clear_fes_rows(self):
         for row_id in self.rows_ids:
-            self.canvas.delete(row_id)
-
-    
-    
+            self.canvas.delete(row_id)    
 
     def make_widgets(self):
         lab = Label(self, text=self.options['title'])
         lab.pack(side=TOP, fill=X)
         canv = Canvas(self, bg='white', relief=SUNKEN)
         canv.config(highlightthickness=0)
-        #canv.config(width=150)
-        # canv.config(scrollregion=(0, 0, 300, 200))
-
 
         self.sbar = Scrollbar(self)
         self.sbar.config(command=canv.yview)
@@ -250,7 +209,8 @@ class FESelectedListFrame(Frame):
     def load_args_text(self):
         args_text = []
         if self.args_ann:
-            sentence = fnutils.query_sentence_by_event_id(self.args_ann[0].event_ann_id)
+            sentence = fnutils.query_sentence_by_event_id(self.args_ann[0]\
+                                                          .event_ann_id)
             if sentence:
                 for arg_ann in self.args_ann:
                     args_text.append(sentence.text[arg_ann.start_at:arg_ann.end_at])
@@ -277,7 +237,8 @@ if __name__ == '__main__':
             self.name = name
             self.id = id
             
-    options = {'fes_colors': ['#85E314', '#33E4CF', '#F14EAA', '#F1D54A', '#E67D57', '#F3BCBC'],
+    options = {'fes_colors': ['#85E314', '#33E4CF', '#F14EAA',
+                              '#F1D54A', '#E67D57', '#F3BCBC'],
                'fes': [FN('Local', 1), FN('Tempo', 2), FN('Atacante', 3)],
                'title' : 'Elementos Anotados'   }
     fe_list =  FESelectedListFrame(options)

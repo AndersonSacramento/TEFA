@@ -56,11 +56,8 @@ class SentenceAnnotation(Frame):
         text.config(width=20, height=12)
         text.pack(side=TOP, expand=YES, fill=BOTH)
         text.bind('<KeyPress>', lambda e: self.on_keyboard(e))
-        #text.bind('<Key>', lambda e: 'break')
-        #text.bind('<Button-2>', lambda e: self.middle_button_in_text)
 
         self.sentence_text_view = text
-
 
         mode_frame = Frame(left_frame)
         mode_frame.pack(side=TOP, expand=YES, fill=X)
@@ -91,7 +88,6 @@ class SentenceAnnotation(Frame):
         txt_fe_def = Text(ann_frame, fg='black', bg='white', font=('times', 12), height=2, width=50)
         txt_fe_def.pack(side=LEFT, expand=YES)
         txt_fe_def.bind('<KeyPress>', lambda e: self.on_keyboard(e))
-        #txt_fe_def.bind('<Key>', lambda e: 'break')
         self.txt_fe_def = txt_fe_def
 
 
@@ -106,8 +102,6 @@ class SentenceAnnotation(Frame):
         self.fe_selection.set_on_fe_selected_handler(self.activate_selected)
         self.fe_selection.set_on_fe_not_selected_handler(self.activate_not_selected)
 
-        #self.fe_selection.set_arg_val_handler(self.arg_val_handler)
-        
 
         self.mode_str_var = StringVar()
         label_mode = Label(left_frame, text='', textvariable=self.mode_str_var, font=('times', 12))

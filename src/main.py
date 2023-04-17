@@ -13,7 +13,8 @@ import timebankpttoolkit.timebankptcorpus as timebankpt
 from concrete.util import read_communication_from_file, lun, get_tokens
 from datetime import datetime, timezone
 
-engine = create_engine('sqlite:///lome_tbpt.db',  connect_args={'check_same_thread': False}, echo=False)
+engine = create_engine('sqlite:///lome_tbpt.db',
+                       connect_args={'check_same_thread': False}, echo=False)
 
 Base = declarative_base()
 
@@ -144,27 +145,6 @@ class ArgANN(Base):
     annotator_id = Column(String, ForeignKey('annotator.email'), primary_key=True)
     annotator = relationship('Annotator', back_populates='args_ann')
     event_ann = relationship('EventANN', back_populates='args_ann')
-
-
-
-# class ValEventANN(Base):
-#     __tablename__ = 'val_event_ann'
-
-#     event_ann_id = Column(String, ForeignKey('event_ann.id'), primary_key=True)
-#     annotator_id = Column(String, ForeignKey('annotator.email'), primary_key=True)
-#     status_type = Column(String)
-
-#     def is_wrong(self):
-#         return self.status_type == 'wrong'
-    
-# class ValArgANN(Base):
-#     __tablename__ = 'val_arg_ann'
-
-#     event_ann_id = Column(String, ForeignKey('event_ann.id'), primary_key=True)
-#     annotator_id = Column(String, ForeignKey('annotator.email'), primary_key=True)
-#     event_fe_id = Column(String, ForeignKey('arg_ann.event_fe_id'), primary_key=True)
-#     status_span = Column(String)
-#     status_type = Column(String)
     
 
 class Annotator(Base):
@@ -185,7 +165,8 @@ class SentenceAnnotator(Base):
     sentence_id = Column(String, ForeignKey('sentence.id'), primary_key=True)
 
     def __repr__(self):
-        return '<SentenceAnnotator(status=%s, annotator_id=%s, sentence_id=%s)' % (self.status, self.annotator_id, self.sentence_id)
+        return ('<SentenceAnnotator(status=%s, annotator_id=%s, sentence_id=%s)' %
+                (self.status, self.annotator_id, self.sentence_id))
     
     
 Base.metadata.create_all(engine)
@@ -261,23 +242,37 @@ def load_timebankpt_data(corpus_dir):
         for (i, sent) in enumerate(doc.get_sentences()):
             if not sent.has_events(): continue
             sent_id = str_uuid()
-            sentence = Sentence(id=sent_id, text=sent.get_text(), document_name=doc_name, position=i)
+            sentence = Sentence(id=sent_id, text=sent.get_text(),
+                                document_name=doc_name, position=i)
             session.add(sentence)
             for ((start_at, end_at), event) in sent.get_events_locations():
-                event_tbpt = EventTBPT(id=str_uuid(), eid=event.get_id(), trigger=event.text, lemma=event.get_stem(), pos=event.get_pos(), start_at=start_at, end_at=end_at, sentence_id=sent_id)
+                event_tbpt = EventTBPT(id=str_uuid(),
+                                       eid=event.get_id(),
+                                       trigger=event.text,
+                                       lemma=event.get_stem(),
+                                       pos=event.get_pos(),
+                                       start_at=start_at,
+                                       end_at=end_at,
+                                       sentence_id=sent_id)
                 session.add(event_tbpt)
             session.commit()
 
 def delete_all_not_annotated_events():
     with session_scope() as session:
         for event_tbpt  in session.query(EventTBPT).all():
-            event_ann = session.query(EventANN).filter_by(event_id=event_tbpt.id).first()
+            event_ann = session.query(EventANN)\
+                               .filter_by(event_id=event_tbpt.id).first()
             if not event_ann:
-                session.query(EventTBPT).filter_by(id=event_tbpt.id).delete(synchronize_session='fetch')
+                session.query(EventTBPT)\
+                       .filter_by(id=event_tbpt.id)\
+                       .delete(synchronize_session='fetch')
         for sentence in session.query(Sentence).all():
-            event_tbpt = session.query(EventTBPT).filter_by(sentence_id=sentence.id).first()
+            event_tbpt = session.query(EventTBPT)\
+                                .filter_by(sentence_id=sentence.id).first()
             if not event_tbpt:
-                session.query(Sentence).filter_by(id=sentence.id).delete(synchronize_session='fetch')
+                session.query(Sentence)\
+                       .filter_by(id=sentence.id)\
+                       .delete(synchronize_session='fetch')
                 
     
             
@@ -297,7 +292,8 @@ def get_sentence_text(sentence):
 def get_situation_mentions(comm, situation_type='EVENT'):
     situation_type_dict = {}
     for i, situation_mention_set in enumerate(comm.situationMentionSetList):
-        types = list({situation_mention.situationType for situation_mention in situation_mention_set.mentionList})
+        types = list({situation_mention.situationType
+                      for situation_mention in situation_mention_set.mentionList})
         situation_type_dict[types[0]] = situation_mention_set.mentionList
     return situation_type_dict.get(situation_type, [])
 
@@ -308,7 +304,11 @@ def get_mention_full_text(mention):
     return ' '.join(get_mention_tokens(mention))
 
 def get_args_from_situation(situation):
-    return [(arg.entityMentionId.uuidString, arg.entityMention.text, arg.role, get_mention_start_end(arg.entityMention)) for arg in lun(situation.argumentList)]
+    return [(arg.entityMentionId.uuidString,
+             arg.entityMention.text,
+             arg.role,
+             get_mention_start_end(arg.entityMention))
+            for arg in lun(situation.argumentList)]
 
 
 
@@ -318,14 +318,19 @@ def get_all_comm_in(dir_path):
 
 def get_mention_text(mention):
     token_indices = mention.tokens.tokenIndexList
-    tokens = [mention.tokens.tokenization.tokenList.tokenList[token_index].text for token_index in token_indices]
+    tokens = [mention.tokens.tokenization.tokenList.tokenList[token_index].text
+              for token_index in token_indices]
 
     return without_final_punk(' '.join(tokens))
 
 def get_mention_start_end(mention):
     token_indices = mention.tokens.tokenIndexList
     mention_text = get_mention_text(mention)
-    text_before_mention = ' '.join([mention.tokens.tokenization.tokenList.tokenList[token_index].text for token_index in range(token_indices[0])])
+    text_before_mention = ' '.join([mention.tokens.\
+                                    tokenization.\
+                                    tokenList.\
+                                    tokenList[token_index].\
+                                    text for token_index in range(token_indices[0])])
     start_at = len(text_before_mention) + 1 if len(text_before_mention) > 0 else 0
     end_at = start_at + len(mention_text)
 
@@ -368,7 +373,9 @@ def persist_events_from_comm(dir_path):
         for smention in get_situation_mentions(comm, situation_type='EVENT'):
             situation_fn_type = smention.situationKind
             situation_start, situation_end = get_mention_start_end(smention)
-            sentence = query_sentence(document_name, get_mention_full_text(smention), session)
+            sentence = query_sentence(document_name,
+                                      get_mention_full_text(smention),
+                                      session)
             situation_text = without_final_punk(smention.text)
             if sentence:
                 frame = fn.frame(situation_fn_type)
@@ -383,7 +390,8 @@ def persist_events_from_comm(dir_path):
                 except sqlalchemy.exc.IntegrityError:
                     session.rollback()
                     continue
-                for (arg_id, arg_text, arg_role, (arg_start, arg_end)) in get_args_from_situation(smention):
+                for (arg_id, arg_text, arg_role, (arg_start, arg_end)) \
+                    in get_args_from_situation(smention):
                     fe = frame.FE.get(arg_role)
                     arg_text = without_final_punk(arg_text)
                     try:
@@ -399,14 +407,3 @@ def persist_events_from_comm(dir_path):
                         session.rollback()
                         continue
     session.close()
-                
-
-
-# if __name__ == '__main__':
-
-#     if len(sys.argv) > 1:
-#         filepath = sys.argv[1]
-#     else:
-#         filepath = '../data/output-aida/wsj_0135.comm'
-        
-#     comm = read_communication_from_file(filepath)

@@ -32,10 +32,10 @@ class SentencesPanel(Frame):
 
 
     def makeWidgets(self, options):
-        #self.config(takefocus=0)
         self.todo_scroll = ScrolledList(options['todo'], parent=self)
         self.todo_scroll.config_listbox(bg='tomato')
-        Button(self.todo_scroll, text='Adicionar', command=self.handler_file_dialog).pack(side=TOP)
+        Button(self.todo_scroll, text='Adicionar',
+               command=self.handler_file_dialog).pack(side=TOP)
         self.doing_scroll = ScrolledList(options['doing'], parent=self)
         self.doing_scroll.config_listbox(bg='aquamarine')
         self.done_scroll = ScrolledList(options['done'], parent=self)
@@ -69,9 +69,12 @@ class SentencesPanel(Frame):
 
 
         # Move between lists
-        todo_focus_lambda = lambda i, s: self.set_current_focus_list(self.todo_scroll)
-        doing_focus_lambda = lambda i, s: self.set_current_focus_list(self.doing_scroll)
-        done_focus_lambda = lambda i, s: self.set_current_focus_list(self.done_scroll)
+        todo_focus_lambda = (lambda i, s:
+                             self.set_current_focus_list(self.todo_scroll))
+        doing_focus_lambda = (lambda i, s:
+                              self.set_current_focus_list(self.doing_scroll))
+        done_focus_lambda = (lambda i, s:
+                             self.set_current_focus_list(self.done_scroll))
         
         self.doing_scroll.set_ctrl_1_handler(todo_focus_lambda)
         self.doing_scroll.set_1_handler(todo_focus_lambda)
@@ -88,7 +91,6 @@ class SentencesPanel(Frame):
         self.doing_scroll.set_ctrl_3_handler(done_focus_lambda)
         self.doing_scroll.set_3_handler(done_focus_lambda)
 
-        #
         self.parent.bind_all('<KeyPress>', self.on_keyboard)
 
     def handler_file_dialog(self):
@@ -104,7 +106,9 @@ class SentencesPanel(Frame):
         scroll_list.get_list_focus()
         
     def _is_ctrl_key(self, event):
-        return event.state & 0x0004 or event.keysym == 'Control_L' or event.keysym == 'Control_R'
+        return (event.state & 0x0004 or
+                event.keysym == 'Control_L' or
+                event.keysym == 'Control_R')
 
 
     def select_next_in_focus_list(self):
@@ -179,7 +183,7 @@ class SentencesPanel(Frame):
         for sentence in fnutils.load_sentences(self.email, status):
             queue, sentences_list  = status_queue[status]
             
-            queue.put(copy(sentence))#SentenceViewObj(sentence.id, sentence.text))
+            queue.put(copy(sentence))
             sentences_list.append(copy(sentence))
 
     def annotate_sentence(self, i, s):
@@ -192,7 +196,6 @@ class SentencesPanel(Frame):
             w, h = self.winfo_screenwidth(), self.winfo_screenheight()
             win.geometry("%dx%d+0+0" % (w, h))
             win.focus_set()
-            #win.grab_set()
             win.wait_window()
 
     
